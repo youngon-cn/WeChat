@@ -6,6 +6,6 @@
 /wx-client/test/unit/coverage
 /wx-client/test/e2e/reports
 
-/wx-server/node_modules/
 /wx-server/npm-debug.log
+/wx-server/node_modules/
 /wx-server/controllers/key/
