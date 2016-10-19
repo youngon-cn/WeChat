@@ -8,4 +8,5 @@
 
 /wx-server/npm-debug.log
 /wx-server/node_modules/
+/wx-server/public/
 /wx-server/controllers/key/
