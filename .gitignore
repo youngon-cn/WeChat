@@ -1,0 +1,11 @@
+.DS_Store
+/wx-client/node_modules/
+/wx-client/dist/
+/wx-client/npm-debug.log
+/wx-client/selenium-debug.log
+/wx-client/test/unit/coverage
+/wx-client/test/e2e/reports
+
+/wx-server/node_modules/
+/wx-server/npm-debug.log
+/wx-server/controllers/key/
