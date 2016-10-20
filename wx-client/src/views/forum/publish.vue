@@ -5,16 +5,52 @@
     span 发布帖子
   content
     form-list
-      text-field(label-float, label="帖子标题", icon="title")
-      text-field(label-float, label="帖子内容", icon="subject", type="textarea", :rows="4")
-  float-button(style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="check", v-link="{path: '/forum/publish'}")
+      text-field(label-float, label="帖子标题", icon="title", :value.sync="title")
+      text-field(label-float, label="帖子内容", icon="subject", type="textarea", :rows="4", :value.sync="content")
+  float-button(style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="check", @click="publish")
 </template>
 
 <script>
+import { toast } from '../../vuex/actions'
+
 export default {
+  data () {
+    return {
+      title: '',
+      content: ''
+    }
+  },
   methods: {
     back () {
-      window.history.back()
+      window.history.go(-1)
+    },
+    publish () {
+      if (!this.title) {
+        return this.toast('请输入标题')
+      }
+      this.$http
+        .post('/request/forum/post', {
+          title: this.title,
+          content: this.content
+        })
+        .then((data) => {
+          console.log(data)
+          if (data.body.state === 1) {
+            this.toast('发布成功')
+            setTimeout(() => {
+              this.title = ''
+              this.content = ''
+              this.back()
+            }, 600)
+          }
+        }, (err) => {
+          console.log(err)
+        })
+    }
+  },
+  vuex: {
+    actions: {
+      toast
     }
   }
 }

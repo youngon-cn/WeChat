@@ -5,56 +5,54 @@
     span 帖子详情
   content
     .post
-      h2.post-title 爸爸去哪儿4
+      h2.post-title {{post.title}}
       .post-info
-        img(src="http://i1.17173cdn.com/9ih5jd/YWxqaGBf/forum/images/2013/10/16/174233sqpqp7zt7o71qu73.png")
+        img(:src="post.poster.headimgurl")
         .post-info-text
-          p 柴茂源
+          p {{post.poster.nickname}}
           p 三天前创建·10次浏览
       p 无详情
     .comments
-      h3 12条回复
+      h3(v-if="post.comments.length") {{post.comments.length}}条回复
+      h3(v-else) 还没有人回复
       list
-        item
+        item(v-for="comment in post.comments")
           item-media
-            img.comment-headImg(src="http://i1.17173cdn.com/9ih5jd/YWxqaGBf/forum/images/2013/10/16/174233sqpqp7zt7o71qu73.png")
+            img.comment-headImg(:src="comment.commenter.headimgurl")
           item-content
             item-title-row
-              item-title F-loat
+              item-title {{comment.commenter.nickname}}
               item-title-after
-                icon(value="comment")
-            item-text.comment-text 啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联
-        item
-          item-media
-            img.comment-headImg(src="http://i1.17173cdn.com/9ih5jd/YWxqaGBf/forum/images/2013/10/16/174233sqpqp7zt7o71qu73.png")
-          item-content
-            item-title-row
-              item-title F-loat
-              item-title-after
-                icon(value="comment")
-            item-text.comment-text 啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联
-        item
-          item-media
-            img.comment-headImg(src="http://i1.17173cdn.com/9ih5jd/YWxqaGBf/forum/images/2013/10/16/174233sqpqp7zt7o71qu73.png")
-          item-content
-            item-title-row
-              item-title F-loat
-              item-title-after
-                icon(value="comment")
-            item-text.comment-text 啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联啦啦啦阿联
+                icon(value="comment", @click="tooglePopup()")
+            item-text.comment-text {{comment.content}}
   float-button(style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="comment", @click="tooglePopup()", v-el:button)
   popup.comment-popup(position="bottom", :show.sync="show")
     .comment-bar
       span 回复帖子
-      icon.comment(value="done", @click="tooglePopup()")
-    textarea.comment-form
+      icon.comment-operat(value="done", @click="postComment()")
+      icon.comment-operat(value="close", @click="tooglePopup()")
+    textarea.comment-form(v-model="comment")
 </template>
 
 <script>
+import { toast } from '../../vuex/actions'
+
 export default {
+  attached () {
+    this.getPost()
+    this.post = {
+      poster: {},
+      comments: []
+    }
+  },
   data () {
     return {
-      show: false
+      show: false,
+      post: {
+        poster: {},
+        comments: []
+      },
+      comment: ''
     }
   },
   methods: {
@@ -62,7 +60,36 @@ export default {
       window.history.go(-1)
     },
     tooglePopup () {
+      if (this.show) this.comment = ''
       this.show = !this.show
+    },
+    getPost () {
+      this.$http
+        .get('/request/forum/post?postId=' + this.$route.params.pid)
+        .then((data) => {
+          this.post = data.body
+        }, (err) => {
+          console.log(err)
+        })
+    },
+    postComment () {
+      this.$http
+        .post('/request/forum/comment', {
+          comment: this.comment,
+          postId: this.$route.params.pid
+        })
+        .then((data) => {
+          this.toast('回复成功')
+          this.getPost()
+          this.tooglePopup()
+        }, (err) => {
+          console.log(err)
+        })
+    }
+  },
+  vuex: {
+    actions: {
+      toast
     }
   }
 }
@@ -79,6 +106,7 @@ export default {
 .post-info img
   width 60px
   float left
+  border-radius 50%
 .post-info-text
   float left
   padding 6px
@@ -95,6 +123,7 @@ export default {
   margin 0
 .comment-headImg
   width 40px
+  border-radius 50%
 .comment-text
   display block
   max-height none
@@ -107,20 +136,14 @@ export default {
   color #7e848c
 .comment-bar
   width 100%
-  -webkit-box-pack justify
-  -ms-flex-pack justify
-  justify-content space-between
   background-color #474a4f
   font-size 16px
   height 48px
-  display -webkit-box
-  display -ms-flexbox
-  display flex
-  -webkit-box-align center
-  -ms-flex-align center
-  align-items center
+  line-height 48px
   color #fff
   padding-left 10px
-.comment
+.comment-operat
+  float right
+  line-height 48px
   padding-right 10px
 </style>

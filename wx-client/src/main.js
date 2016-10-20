@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import VueResource from 'vue-resource'
+import store from './vuex/store'
 import VueCarbon from 'vue-carbon'
 import 'vue-carbon/dist/vue-carbon.css' // 加载css文件
 import app from './index'
@@ -29,7 +30,7 @@ router.map({
       require(['./views/forum/publish.vue'], resolve)
     }
   },
-  '/forum/detail/:aid': {
+  '/forum/detail/:pid': {
     component (resolve) {
       require(['./views/forum/detail.vue'], resolve)
     }
@@ -65,7 +66,8 @@ router.redirect({
 })
 
 const App = Vue.extend({
-  components: { app }
+  components: { app },
+  store
 })
 
 router.start(App, 'body')

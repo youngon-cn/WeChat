@@ -10,15 +10,20 @@ admin-menu
     item-cell(v-if="!articleList.length")
       item-title 无已上传文章
   confirm(:title="confirm.title", show-icon, @sure="handlerSure", :show.sync="confirm.show", :msg="confirm.msg")
-  toast(v-for="toast in toasts", :text="toast.text", :loading="toast.loading", :icon="toast.icon", :center="toast.center")
 </template>
 
 <script>
+import { toast } from '../../vuex/actions'
 import adminMenu from '../../components/history/admin-menu'
 
 export default {
   components: {
     adminMenu
+  },
+  vuex: {
+    actions: {
+      toast
+    }
   },
   ready () {
     this.getArtInfos()
@@ -30,8 +35,7 @@ export default {
         title: '',
         msg: '',
         show: false
-      },
-      toasts: []
+      }
     }
   },
   methods: {
@@ -62,10 +66,6 @@ export default {
     },
     editart (id) {
       this.toast('开发中')
-    },
-    toast (text) {
-      this.toasts.push({text: text})
-      setTimeout(() => this.toasts.splice(0, 1), 2000)
     }
   }
 }

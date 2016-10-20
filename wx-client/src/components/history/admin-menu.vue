@@ -6,6 +6,7 @@
       slot(name="header")
     content
       slot(name="content")
+  slot(name="plug")
   nav-drawer(:show.sync="navShow")
     .nav-icon-logo(slot="header") Y
     .nav-title(slot="header") 微信历史消息管理后台

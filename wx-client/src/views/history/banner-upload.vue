@@ -6,11 +6,12 @@ admin-menu
     text-field(label-float, label="轮换图链接", icon="language", :value.sync="infos.link")
     text-field(label-float, label="身份验证码", icon="person_pin", :value.sync="token")
     img-upload(item="上传轮换图", :img.sync="infos.img")
-  float-button(style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="check", @click="upload")
-  toast(v-for="toast in toasts", :text="toast.text", :loading="toast.loading", :icon="toast.icon", :center="toast.center")
+  div(slot="plug")
+    float-button(style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="check", @click="upload")
 </template>
 
 <script>
+import { toast } from '../../vuex/actions'
 import imgUpload from '../../components/history/img-upload'
 import adminMenu from '../../components/history/admin-menu'
 
@@ -18,6 +19,11 @@ export default {
   components: {
     imgUpload,
     adminMenu
+  },
+  vuex: {
+    actions: {
+      toast
+    }
   },
   data () {
     return {
@@ -68,10 +74,6 @@ export default {
             console.log(err)
           })
       }
-    },
-    toast (text) {
-      this.toasts.push({text: text})
-      setTimeout(() => this.toasts.splice(0, 1), 2000)
     }
   }
 }
