@@ -7,6 +7,9 @@ var User = require('../models/user')
 var Post = require('../models/post')
 var Comment = require('../models/comment')
 
+var url = client.getAuthorizeURL('http://wx.youngon.com.cn/forum', 'wxoauth', 'snsapi_userinfo');
+console.log(url)
+
 exports.wxoauth = function (req, res) {
   if (req.session.openid) {
     res.json({ "state": 1 })
@@ -63,8 +66,8 @@ exports.getPosts = function (req, res) {
       select: 'nickname headimgurl',
       path: 'poster'
     })
-    .exec((err, post) => {
-      res.send(post)
+    .exec((err, posts) => {
+      res.send(posts)
     })
 }
 
@@ -83,6 +86,8 @@ exports.getPost = function (req, res) {
       }
     })
     .exec((err, post) => {
+      post.pv++
+      post.save()
       res.send(post)
     })
 }

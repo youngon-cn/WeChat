@@ -10,8 +10,9 @@
         img(:src="post.poster.headimgurl")
         .post-info-text
           p {{post.poster.nickname}}
-          p 三天前创建·10次浏览
-      p 无详情
+          p {{moment(post.postDate).fromNow()}}创建·{{post.pv}}次浏览
+      p(v-if="post.content") {{post.content}}
+      p(v-else) 无详情
     .comments
       h3(v-if="post.comments.length") {{post.comments.length}}条回复
       h3(v-else) 还没有人回复
@@ -36,6 +37,8 @@
 
 <script>
 import { toast } from '../../vuex/actions'
+import moment from 'moment'
+moment.locale('zh-cn')
 
 export default {
   attached () {
@@ -79,12 +82,18 @@ export default {
           postId: this.$route.params.pid
         })
         .then((data) => {
+          if (data.body.turnUrl) {
+            return (window.location.href = data.body.turnUrl)
+          }
           this.toast('回复成功')
           this.getPost()
           this.tooglePopup()
         }, (err) => {
           console.log(err)
         })
+    },
+    moment (date) {
+      return moment(date)
     }
   },
   vuex: {
@@ -100,6 +109,7 @@ export default {
   padding 4px 18px
 .post-title
   margin 10px 0
+  min-height 31px
 .post-info
   overflow hidden
   margin 4px 0

@@ -6,7 +6,7 @@
   content
     form-list
       text-field(label-float, label="帖子标题", icon="title", :value.sync="title")
-      text-field(label-float, label="帖子内容", icon="subject", type="textarea", :rows="4", :value.sync="content")
+      text-field(label-float, label="帖子内容（可留空）", icon="subject", type="textarea", :rows="4", :value.sync="content")
   float-button(style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="check", @click="publish")
 </template>
 
@@ -34,7 +34,9 @@ export default {
           content: this.content
         })
         .then((data) => {
-          console.log(data)
+          if (data.body.turnUrl) {
+            return (window.location.href = data.body.turnUrl)
+          }
           if (data.body.state === 1) {
             this.toast('发布成功')
             setTimeout(() => {

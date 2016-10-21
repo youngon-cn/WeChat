@@ -15,6 +15,10 @@ var postSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Comment'
   }],
+  pv: {
+    type: Number,
+    default: 0
+  },
   type: {
     type: Number,
     default: 0

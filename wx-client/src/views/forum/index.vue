@@ -13,10 +13,10 @@
             item-title {{post.title}}
           item-title-row
             item-title.sub-title {{post.poster.nickname}}
-            item-title-after (25/140)
+            item-title-after ({{post.comments.length}}/{{post.pv}})
           item-title-row
-            item-title.sub-title 创建于： {{post.postDate}}
-            item-title-after 三天前
+            item-title.sub-title 创建于： {{moment(post.postDate).format('YYYY-MM-DD hh:mm:ss')}}
+            item-title-after {{moment(post.postDate).fromNow()}}
     float-button(style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="mode_edit", v-link="{path: '/forum/publish'}")
   nav-drawer(:show.sync="navShow")
     .nav-icon-logo(slot="header")
@@ -29,6 +29,8 @@
 
 <script>
 import { getUserInfo } from '../../vuex/getters'
+import moment from 'moment'
+moment.locale('zh-cn')
 
 export default {
   attached () {
@@ -55,6 +57,9 @@ export default {
     },
     closeNav (title) {
       this.navShow = false
+    },
+    moment (date) {
+      return moment(date)
     }
   },
   vuex: {
