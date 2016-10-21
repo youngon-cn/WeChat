@@ -3,9 +3,10 @@
   header-bar
     icon-button(slot="left", icon="menu", @click="showNav()")
     span VOD反馈专区
-  content
+  content(v-el:post_list)
+    refresh-control(@refresh="getNewPosts(posts[0]._id)", :trigger="$els.post_list", :refreshing="refreshing")
     list
-      item(ripple, v-link="{path: '/forum/detail/' + post._id}", v-for="post in posts")
+      item(v-link="{path: '/forum/detail/' + post._id}", v-for="post in posts")
         item-media.headImg
           img(:src="post.poster.headimgurl")
         item-content.content
@@ -15,10 +16,11 @@
             item-title.sub-title {{post.poster.nickname}}
             item-title-after ({{post.comments.length}}/{{post.pv}})
           item-title-row
-            item-title.sub-title 创建于： {{moment(post.postDate).format('YYYY-MM-DD hh:mm:ss')}}
+            item-title.sub-title 创建于：{{moment(post.postDate).format('YYYY-MM-DD hh:mm:ss')}}
             item-title-after {{moment(post.postDate).fromNow()}}
+    infinite-scroll(@load="getNextPagePosts(posts[posts.length-1]._id)", :trigger="$els.post_list", :loading="loading")
     float-button(style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="mode_edit", v-link="{path: '/forum/publish'}")
-  nav-drawer(:show.sync="navShow")
+  nav-drawer(:show.sync="navShow", v-if="user.nickname")
     .nav-icon-logo(slot="header")
       img(:src="user.headimgurl")
     .nav-title(slot="header") {{user.nickname}}
@@ -28,43 +30,49 @@
 </template>
 
 <script>
-import { getUserInfo } from '../../vuex/getters'
+import { getNewPosts, getFirstPagePosts, getNextPagePosts, toogleLoading } from '../../vuex/actions'
+import { user, refreshing, loading, posts } from '../../vuex/getters'
 import moment from 'moment'
 moment.locale('zh-cn')
 
 export default {
-  attached () {
-    this.getPosts()
+  ready () {
+    this.getFirstPagePosts()
   },
   data () {
     return {
-      posts: [],
       navShow: false
     }
   },
   methods: {
-    getPosts () {
-      this.$http
-        .get('/request/forum/posts')
-        .then((data) => {
-          this.posts = data.body
-        }, (err) => {
-          console.log(err)
-        })
-    },
     showNav () {
       this.navShow = true
     },
-    closeNav (title) {
+    closeNav () {
       this.navShow = false
     },
     moment (date) {
       return moment(date)
+    },
+    loadMore () {
+      this.toogleLoading()
+      setTimeout(() => {
+        this.toogleLoading()
+      }, 1000)
     }
   },
   vuex: {
+    actions: {
+      getNewPosts,
+      getFirstPagePosts,
+      getNextPagePosts,
+      toogleLoading
+    },
     getters: {
-      user: getUserInfo
+      user,
+      posts,
+      refreshing,
+      loading
     }
   }
 }
@@ -73,14 +81,18 @@ export default {
 <style lang="stylus">
 .headImg
   float left
-  width 80px
+  width 70px
   height 100px
 
 .headImg > img
-  max-width 80px
+  max-width 70px
+  margin 5px 0
 
-#forum .vc-item-title-row
-  margin 1px 0
+#forum
+  .vc-item-title-row
+    margin 1px 0
+  .vc-list
+    margin 0
 
 .sub-title
   font-size 14px
@@ -107,4 +119,7 @@ export default {
   font-size 16px
   margin-top 16px
   color #eee
+
+.vc-item-media+.vc-item-content
+  padding-left 8px
 </style>

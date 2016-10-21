@@ -7,9 +7,6 @@ var User = require('../models/user')
 var Post = require('../models/post')
 var Comment = require('../models/comment')
 
-var url = client.getAuthorizeURL('http://wx.youngon.com.cn/forum', 'wxoauth', 'snsapi_userinfo');
-console.log(url)
-
 exports.wxoauth = function (req, res) {
   if (req.session.openid) {
     res.json({ "state": 1 })
@@ -59,9 +56,38 @@ exports.info = function (req, res) {
     })
 }
 
-exports.getPosts = function (req, res) {
+exports.getNewPosts = function (req, res) {
+  Post
+    .find({'_id': { "$gt": req.query._id}})
+    .sort({_id: -1})
+    .populate({
+      select: 'nickname headimgurl',
+      path: 'poster'
+    })
+    .exec((err, posts) => {
+      res.send(posts)
+    })
+}
+
+exports.getFirstPagePosts = function (req, res) {
   Post
     .find()
+    .limit(15)
+    .sort({_id: -1})
+    .populate({
+      select: 'nickname headimgurl',
+      path: 'poster'
+    })
+    .exec((err, posts) => {
+      res.send(posts)
+    })
+}
+
+exports.getNextPagePosts = function (req, res) {
+  Post
+    .find({'_id': { "$lt": req.query._id}})
+    .limit(15)
+    .sort({_id: -1})
     .populate({
       select: 'nickname headimgurl',
       path: 'poster'

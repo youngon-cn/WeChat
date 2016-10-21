@@ -3,7 +3,8 @@
   header-bar
     icon-button(slot="left", @click="back()", icon="arrow_back")
     span 帖子详情
-  content
+  content(v-el:post_detail)
+    refresh-control(@refresh="getPost()", :trigger="$els.post_detail", :refreshing="refreshing")
     .post
       h2.post-title {{post.title}}
       .post-info
@@ -36,7 +37,8 @@
 </template>
 
 <script>
-import { toast } from '../../vuex/actions'
+import { toast, toogleLoading } from '../../vuex/actions'
+import { refreshing } from '../../vuex/getters'
 import moment from 'moment'
 moment.locale('zh-cn')
 
@@ -47,6 +49,7 @@ export default {
       poster: {},
       comments: []
     }
+    this.show = false
   },
   data () {
     return {
@@ -67,15 +70,20 @@ export default {
       this.show = !this.show
     },
     getPost () {
+      this.toogleLoading()
       this.$http
         .get('/request/forum/post?postId=' + this.$route.params.pid)
         .then((data) => {
           this.post = data.body
+          this.toogleLoading()
         }, (err) => {
           console.log(err)
         })
     },
     postComment () {
+      if (!this.comment) {
+        return this.toast('请输入评论内容')
+      }
       this.$http
         .post('/request/forum/comment', {
           comment: this.comment,
@@ -98,7 +106,11 @@ export default {
   },
   vuex: {
     actions: {
-      toast
+      toast,
+      toogleLoading
+    },
+    getters: {
+      refreshing
     }
   }
 }

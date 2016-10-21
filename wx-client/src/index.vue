@@ -4,8 +4,8 @@ toast(v-for="toast in toasts", :text="toast.text", :center="toast.center")
 </template>
 
 <script>
-import { userInfo } from './vuex/actions'
-import { getToasts } from './vuex/getters'
+import { getUser } from './vuex/actions'
+import { toasts } from './vuex/getters'
 
 export default {
   ready () {
@@ -21,23 +21,23 @@ export default {
             .get('/request/forum/wxoauth?code=' + this.$route.query.code)
             .then((data) => {
               if (data.body.state === 1) {
-                this.userInfo()
+                this.getUser()
               }
             }, (err) => {
               console.log(err)
             })
         } else {
-          time > 1 ? this.tryAuth(time - 1) : this.userInfo()
+          time > 1 ? this.tryAuth(time - 1) : this.getUser()
         }
       }, 300)
     }
   },
   vuex: {
     actions: {
-      userInfo
+      getUser
     },
     getters: {
-      toasts: getToasts
+      toasts
     }
   }
 }

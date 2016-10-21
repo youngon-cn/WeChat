@@ -11,7 +11,8 @@
 </template>
 
 <script>
-import { toast } from '../../vuex/actions'
+import { toast, getNewPosts } from '../../vuex/actions'
+import { posts } from '../../vuex/getters'
 
 export default {
   data () {
@@ -42,8 +43,9 @@ export default {
             setTimeout(() => {
               this.title = ''
               this.content = ''
+              this.getNewPosts(this.posts[0]._id)
               this.back()
-            }, 600)
+            }, 500)
           }
         }, (err) => {
           console.log(err)
@@ -52,7 +54,11 @@ export default {
   },
   vuex: {
     actions: {
-      toast
+      toast,
+      getNewPosts
+    },
+    getters: {
+      posts
     }
   }
 }
