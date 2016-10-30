@@ -7,8 +7,10 @@ Vue.use(Vuex)
 const state = {
   user: {},
   posts: [],
+  postsType: 9,
   loading: false,
   refreshing: false,
+  scrollTop: 0,
   toasts: []
 }
 
@@ -16,15 +18,27 @@ const mutations = {
   USERINFO (state, data) {
     state.user = data
   },
-  NEWPOSTS (state, data) {
-    for (let post of data) {
-      state.posts.unshift(post)
-    }
+  FIRSTPAGEPOSTS (state, data) {
+    state.posts = data
   },
-  POSTS (state, data) {
+  MOREPOSTS (state, data) {
     for (let post of data) {
       state.posts.push(post)
     }
+  },
+  POSTSTYPE (state, data) {
+    state.postsType = data
+  },
+  FORUMSTATE (state, index, scrollTop) {
+    state.posts[index].pv++
+    state.scrollTop = scrollTop
+  },
+  POSTSTATE (state, index, type) {
+    state.posts[index].nc++
+    if (type) state.posts[index].type = type
+  },
+  SCROLLINIT (state) {
+    state.scrollTop = 0
   },
   LOADING (state) {
     state.loading = !state.loading

@@ -1,25 +1,26 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import VueResource from 'vue-resource'
-import store from './vuex/store'
 import VueCarbon from 'vue-carbon'
-import 'vue-carbon/dist/vue-carbon.css' // 加载css文件
+import 'vue-carbon/dist/vue-carbon.css'
+import store from './vuex/store'
 import app from './index'
 
 Vue.use(VueRouter)
 Vue.use(VueResource)
 Vue.use(VueCarbon)
 
+const App = Vue.extend({
+  components: { app },
+  store
+})
+
 const router = new VueRouter({
-  history: true
+  history: true,
+  saveScrollPosition: true
 })
 
 router.map({
-  '/history': {
-    component (resolve) {
-      require(['./views/history/'], resolve)
-    }
-  },
   '/forum': {
     component (resolve) {
       require(['./views/forum/'], resolve)
@@ -30,27 +31,32 @@ router.map({
       require(['./views/forum/publish.vue'], resolve)
     }
   },
-  '/forum/detail/:pid': {
+  '/forum/:pid': {
     component (resolve) {
       require(['./views/forum/detail.vue'], resolve)
     }
   },
-  '/ygadmin/history/article/upload': {
+  '/history': {
+    component (resolve) {
+      require(['./views/history/'], resolve)
+    }
+  },
+  '/history/article/upload': {
     component (resolve) {
       require(['./views/history/article-upload'], resolve)
     }
   },
-  '/ygadmin/history/article/manage': {
+  '/history/article/manage': {
     component (resolve) {
       require(['./views/history/article-manage'], resolve)
     }
   },
-  '/ygadmin/history/banner/upload': {
+  '/history/banner/upload': {
     component (resolve) {
       require(['./views/history/banner-upload'], resolve)
     }
   },
-  '/ygadmin/history/banner/manage': {
+  '/history/banner/manage': {
     component (resolve) {
       require(['./views/history/banner-manage'], resolve)
     }
@@ -58,16 +64,7 @@ router.map({
 })
 
 router.redirect({
-  '/ygadmin': '/ygadmin/history/article/upload'
-})
-
-router.redirect({
-  '*': '/history'
-})
-
-const App = Vue.extend({
-  components: { app },
-  store
+  '*': '/forum'
 })
 
 router.start(App, 'body')

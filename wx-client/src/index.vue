@@ -47,4 +47,76 @@ export default {
 html, body
   margin 0
   padding 0
+
+img.youngon
+  width 18px
+  height 18px
+
+.nav-icon-logo
+  width 80px
+  height 80px
+  font-size 50px
+  display -webkit-box
+  display -ms-flexbox
+  display flex
+  -webkit-box-pack center
+  -ms-flex-pack center
+  justify-content center
+  -webkit-box-align center
+  -ms-flex-align center
+  align-items center
+  color #fff
+  img
+    width 100%
+    border-radius 50%
+
+.nav-title
+  font-size 16px
+  margin-top 16px
+  color #eee
+
+.fade-transition {
+  transition all .5s ease
+  opacity 1
+}
+
+.fade-enter, .fade-leave {
+  opacity 0
+}
+
+.bounce-transition {
+  display block
+}
+.bounce-enter {
+  animation: bounce-in .5s;
+}
+.bounce-leave {
+  animation: bounce-out .5s;
+}
+@keyframes bounce-in {
+  0% {
+    transform: translate(100%, 0)
+    opacity 0.3
+  }
+  50% {
+    transform: translate(-12%, 0)
+  }
+  100% {
+    transform: translate(0, 0)
+    opacity 1
+  }
+}
+@keyframes bounce-out {
+  0% {
+    transform: translate(0, 0)
+    opacity 1
+  }
+  50% {
+    transform: translate(-12%, 0)
+  }
+  100% {
+    transform: translate(100%, 0)
+    opacity 0.3
+  }
+}
 </style>

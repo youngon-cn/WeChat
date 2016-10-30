@@ -1,7 +1,7 @@
 <template lang="pug">
 #publish.vc-page
   header-bar
-    icon-button(slot="left", @click="back()", icon="arrow_back")
+    icon-button(slot="left", v-link="{path: '/forum'}", icon="arrow_back")
     span 发布帖子
   content
     form-list
@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import { toast, getNewPosts } from '../../vuex/actions'
+import { toast, getFirstPagePosts, scrollInit, setPostsType } from '../../vuex/actions'
 import { posts } from '../../vuex/getters'
 
 export default {
@@ -22,9 +22,6 @@ export default {
     }
   },
   methods: {
-    back () {
-      window.history.go(-1)
-    },
     publish () {
       if (!this.title) {
         return this.toast('请输入标题')
@@ -43,8 +40,10 @@ export default {
             setTimeout(() => {
               this.title = ''
               this.content = ''
-              this.getNewPosts(this.posts[0]._id)
-              this.back()
+              this.setPostsType(9)
+              this.getFirstPagePosts(9)
+              this.scrollInit()
+              window.history.go(-1)
             }, 500)
           }
         }, (err) => {
@@ -55,7 +54,9 @@ export default {
   vuex: {
     actions: {
       toast,
-      getNewPosts
+      getFirstPagePosts,
+      scrollInit,
+      setPostsType
     },
     getters: {
       posts
@@ -65,12 +66,13 @@ export default {
 </script>
 
 <style lang="stylus">
-.headImg
-  float left
-  width 80px
-  height 100px
-.headImg > img
-  max-width 80px
-.sub-title
-  font-size 14px
+#publish
+  .headImg
+    float left
+    width 80px
+    height 100px
+  .headImg > img
+    max-width 80px
+  .sub-title
+    font-size 14px
 </style>

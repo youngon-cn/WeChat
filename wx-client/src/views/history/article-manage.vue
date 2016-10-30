@@ -9,11 +9,13 @@ admin-menu
         icon-button.operate(icon="delete", color="red", fill, @click="delart(article._id)")
     item-cell(v-if="!articleList.length")
       item-title 无已上传文章
-  confirm(:title="confirm.title", show-icon, @sure="handlerSure", :show.sync="confirm.show", :msg="confirm.msg")
+  div(slot="plug")
+    confirm(:title="confirm.title", show-icon, @sure="handlerSure", :show.sync="confirm.show", :msg="confirm.msg")
 </template>
 
 <script>
 import { toast } from '../../vuex/actions'
+import { user } from '../../vuex/getters'
 import adminMenu from '../../components/history/admin-menu'
 
 export default {
@@ -23,6 +25,9 @@ export default {
   vuex: {
     actions: {
       toast
+    },
+    getters: {
+      user
     }
   },
   ready () {
@@ -49,6 +54,7 @@ export default {
         })
     },
     delart (id) {
+      if (this.user.type !== 9) return this.toast('管理员可用')
       this.confirm.msg = '确认删除？'
       this.confirm.show = true
       this.handlerSure = () => {
@@ -58,6 +64,8 @@ export default {
             if (data.body.state === 1) {
               this.toast('删除成功')
               this.getArtInfos()
+            } else {
+              this.toast('删除失败，请稍后重试')
             }
           }, (err) => {
             console.log(err)
@@ -65,6 +73,7 @@ export default {
       }
     },
     editart (id) {
+      if (this.user.type !== 9) return this.toast('管理员可用')
       this.toast('开发中')
     }
   }

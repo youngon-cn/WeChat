@@ -4,7 +4,6 @@ admin-menu
   form-list(slot="content")
     text-field(label-float, label="标题", icon="title", :value.sync="infos.title")
     text-field(label-float, label="轮换图链接", icon="language", :value.sync="infos.link")
-    text-field(label-float, label="身份验证码", icon="person_pin", :value.sync="token")
     img-upload(item="上传轮换图", :img.sync="infos.img")
   div(slot="plug")
     float-button(style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="check", @click="upload")
@@ -12,6 +11,7 @@ admin-menu
 
 <script>
 import { toast } from '../../vuex/actions'
+import { user } from '../../vuex/getters'
 import imgUpload from '../../components/history/img-upload'
 import adminMenu from '../../components/history/admin-menu'
 
@@ -23,6 +23,9 @@ export default {
   vuex: {
     actions: {
       toast
+    },
+    getters: {
+      user
     }
   },
   data () {
@@ -40,14 +43,13 @@ export default {
   },
   methods: {
     upload () {
+      if (this.user.type !== 9) return this.toast('管理员可用')
       if (!this.infos.title) {
         this.toast('请输入标题')
       } else if (!this.infos.link) {
         this.toast('请输入轮换图链接')
       } else if (!this.infos.img.name) {
         this.toast('请上传轮换图')
-      } else if (!this.token) {
-        this.toast('请输入身份验证码')
       } else {
         var MyForm = new FormData()
         MyForm.append('title', this.infos.title)
@@ -65,7 +67,7 @@ export default {
                 }
               }
             } else {
-              this.toast(data.body.err)
+              this.toast('轮换图上传失败')
             }
           }, (err) => {
             if (err.status === 413) {

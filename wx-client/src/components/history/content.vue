@@ -40,7 +40,7 @@ list(v-if="tabActive === 2")
 
 <script>
 export default {
-  ready () {
+  attached () {
     this.getArtInfos()
   },
   data () {

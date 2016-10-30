@@ -9,7 +9,7 @@ var mongoStore = require('connect-mongo')(session)
 var admin = require('./controllers/key/mongodb.json')
 
 mongoose.Promise = global.Promise
-mongoose.connect('mongodb://'+admin.name+':'+admin.pwd+'@localhost/wx')
+mongoose.connect('mongodb://'+admin.name+':'+admin.pwd+'@115.159.119.147/wx')
 
 app.use(compression())
 app.use(express.static(path.join(__dirname, 'public')))
@@ -22,7 +22,7 @@ app.use(session({
   name: 'wx',
   cookie: { maxAge: 14 * 24 * 60 * 60 * 1000 },
   store: new mongoStore({
-    url: 'mongodb://'+admin.name+':'+admin.pwd+'@localhost/wx',
+    url: 'mongodb://'+admin.name+':'+admin.pwd+'@115.159.119.147/wx',
     collection: 'sessions'
   })
 }))

@@ -6,7 +6,7 @@ slider(:pages="bannerList",:sliderinit="sliderinit")
 import slider from './slider'
 
 export default {
-  ready () {
+  attached () {
     this.getBarInfos()
   },
   data () {
@@ -58,10 +58,10 @@ export default {
 .slider-container
   margin 0
   width 100%
-  
+
 .sliderButton
   text-align center
-    
+
 .sliderButton button
   display inline-block
   background #fff

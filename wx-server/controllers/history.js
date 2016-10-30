@@ -14,24 +14,20 @@ exports.artInfo = function(req, res) {
 }
 
 exports.artInsert = function(req, res) {
-  if ( req.body.token === 'youngon') {
-    History.create({
-      type: 'art',
-      artType: req.body.artType,
-      title: req.body.title,
-      subtitle: req.body.subtitle,
-      subject: req.body.subject,
-      link: req.body.link,
-      img: '/upload/' + req.file.filename
-    }, function(err) {
-      if (err) {
-        return res.json({ "state": 0, "err": err })
-      }
-      res.json({ "state": 1 })
-    })
-  } else {
-    res.json({ "state": 0, "err": "身份验证码错误" })
-  }
+  History.create({
+    type: 'art',
+    artType: req.body.artType,
+    title: req.body.title,
+    subtitle: req.body.subtitle,
+    subject: req.body.subject,
+    link: req.body.link,
+    img: '/upload/' + req.file.filename
+  }, function(err) {
+    if (err) {
+      return res.json({ "state": 0, "err": err })
+    }
+    res.json({ "state": 1 })
+  })
 }
 
 exports.barInfo = function(req, res) {
@@ -47,21 +43,17 @@ exports.barInfo = function(req, res) {
 }
 
 exports.barInsert = function(req, res) {
-  if ( req.body.token === 'youngon') {
-    History.create({
-      type: 'bar',
-      title: req.body.title,
-      link: req.body.link,
-      img: '/upload/' + req.file.filename
-    }, function(err) {
-      if (err) {
-        return res.json({ "state": 0, "err": err })
-      }
-      res.json({ "state": 1 })
-    })
-  } else {
-    res.json({ "state": 0, "err": "身份验证码错误" })
-  }
+  History.create({
+    type: 'bar',
+    title: req.body.title,
+    link: req.body.link,
+    img: '/upload/' + req.file.filename
+  }, function(err) {
+    if (err) {
+      return res.json({ "state": 0, "err": err })
+    }
+    res.json({ "state": 1 })
+  })
 }
 
 exports.historyDelete = function(req, res) {

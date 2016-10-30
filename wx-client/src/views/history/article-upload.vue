@@ -13,7 +13,6 @@ admin-menu
     text-field(label-float, label="子标题", icon="subtitles", :value.sync="infos.subtitle")
     text-field(label-float, label="简介", icon="subject", type="textarea", :rows="3", :value.sync="infos.subject")
     text-field(label-float, label="文章链接", icon="language", :value.sync="infos.link")
-    text-field(label-float, label="身份验证码", icon="person_pin", :value.sync="token")
     img-upload(item="上传缩略图", :img.sync="infos.img")
   div(slot="plug")
     float-button(style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="check", @click="upload")
@@ -21,6 +20,7 @@ admin-menu
 
 <script>
 import { toast } from '../../vuex/actions'
+import { user } from '../../vuex/getters'
 import imgUpload from '../../components/history/img-upload'
 import adminMenu from '../../components/history/admin-menu'
 
@@ -32,6 +32,9 @@ export default {
   vuex: {
     actions: {
       toast
+    },
+    getters: {
+      user
     }
   },
   data () {
@@ -63,6 +66,7 @@ export default {
   },
   methods: {
     upload () {
+      if (this.user.type !== 9) return this.toast('管理员可用')
       if (!this.infos.title) {
         this.toast('请输入文章标题')
       } else if (!this.infos.subtitle) {
@@ -73,8 +77,6 @@ export default {
         this.toast('请输入文章链接')
       } else if (!this.infos.img.name) {
         this.toast('请上传缩略图')
-      } else if (!this.token) {
-        this.toast('请输入身份验证码')
       } else {
         var MyForm = new FormData()
         MyForm.append('artType', this.artType)
@@ -95,7 +97,7 @@ export default {
                 }
               }
             } else {
-              this.toast(data.body.err)
+              this.toast('文章上传失败')
             }
           }, (err) => {
             if (err.status === 413) {

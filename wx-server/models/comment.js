@@ -8,12 +8,12 @@ var commentSchema = new mongoose.Schema({
   },
   commentDate: {
     type: Date,
-    default: Date.now()
+    default: Date.now
   },
-  subComment: [{
+  to: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Comment'
-  }]
+    ref: 'User'
+  }
 })
 
 var Comment = mongoose.model('Comment', commentSchema);

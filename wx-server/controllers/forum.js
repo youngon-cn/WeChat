@@ -56,26 +56,15 @@ exports.info = function (req, res) {
     })
 }
 
-exports.getNewPosts = function (req, res) {
-  Post
-    .find({'_id': { "$gt": req.query._id}})
-    .sort({_id: -1})
-    .populate({
-      select: 'nickname headimgurl',
-      path: 'poster'
-    })
-    .exec((err, posts) => {
-      res.send(posts)
-    })
-}
-
 exports.getFirstPagePosts = function (req, res) {
+  var type = req.query.type
   Post
-    .find()
-    .limit(15)
-    .sort({_id: -1})
+    .find(type === "9" ? null : {'type': type})
+    .select('-comments -content')
+    .sort({updateDate: -1, _id: -1})
+    .limit(10)
     .populate({
-      select: 'nickname headimgurl',
+      select: 'nickname headimgurl type',
       path: 'poster'
     })
     .exec((err, posts) => {
@@ -84,12 +73,14 @@ exports.getFirstPagePosts = function (req, res) {
 }
 
 exports.getNextPagePosts = function (req, res) {
+  var type = req.query.type
   Post
-    .find({'_id': { "$lt": req.query._id}})
-    .limit(15)
-    .sort({_id: -1})
+    .find(type === "9" ? {'updateDate': { '$lt': req.query.updateDate}} : {'updateDate': { '$lt': req.query.updateDate}, 'type': type})
+    .select('-comments -content')
+    .sort({updateDate: -1, _id: -1})
+    .limit(10)
     .populate({
-      select: 'nickname headimgurl',
+      select: 'nickname headimgurl type',
       path: 'poster'
     })
     .exec((err, posts) => {
@@ -101,20 +92,34 @@ exports.getPost = function (req, res) {
   Post
     .findById(req.query.postId)
     .populate({
-      select: 'nickname headimgurl',
+      select: 'nickname headimgurl type',
       path: 'poster'
     })
     .populate({
       path: 'comments',
       populate: {
-        select: 'nickname headimgurl',
-        path: 'commenter'
+        select: 'nickname headimgurl type',
+        path: 'commenter to'
       }
     })
     .exec((err, post) => {
-      post.pv++
-      post.save()
+      if (req.query.type === 'init') {
+        post.pv++
+        post.save()
+      }
       res.send(post)
+    })
+}
+
+exports.delPost = function (req, res) {
+  Post
+    .findByIdAndRemove(req.query.postId)
+    .exec((err, post) => {
+      if (err) return res.json({ "state": 0, "err": err })
+      res.json({ "state": 1 })
+      Comment.remove({"_id": { "$in": post.comments }}, (err) => {
+        console.log(err)
+      })
     })
 }
 
@@ -133,22 +138,68 @@ exports.insertPost = function (req, res) {
     })
 }
 
-exports.insertComment = function (req, res) {
+exports.postOperate = function (req, res) {
+  var detail = {
+    content: '标记该申请',
+    commenter: req.session.userId
+  }
+  if (req.body.type === 1) {
+    detail.content += '连载中'
+  }
+  if (req.body.type === 2) {
+    detail.content += '已上传'
+  }
+  if (req.body.type === -1) {
+    detail.content += '禁止上传'
+  }
   Comment
-    .create({
-      content: req.body.comment,
-      commenter: req.session.userId
-    })
+    .create(detail)
     .then((comment) => {
       Post
         .findById(req.body.postId)
         .exec((err, post) => {
           post.comments.push(comment._id)
+          post.type = req.body.type
+          post.updateDate = Date.now()
+          post.nc++
           post.save()
           res.json({ "state": 1 })
+          User
+            .findById(post.poster)
+            .exec((err, user) => {
+              api.sendText(user.openid, 'VOD论坛里有人回复了你：' + req.body.comment)
+            })
         })
-        .catch(err => {
-          res.json({ "state": 0, "err": err })
+    })
+    .catch(err => {
+      res.json({ "state": 0, "err": err })
+    })
+}
+
+exports.insertComment = function (req, res) {
+  var detail = {
+      content: req.body.comment,
+      commenter: req.session.userId
+    }
+  if (req.body.to) {
+    detail.to = req.body.to
+  }
+  Comment
+    .create(detail)
+    .then((comment) => {
+      Post
+        .findById(req.body.postId)
+        .exec((err, post) => {
+          post.comments.push(comment._id)
+          post.updateDate = Date.now()
+          post.nc++
+          post.save()
+          res.json({ "state": 1 })
+          User
+            .findById(post.poster)
+            .exec((err, user) => {
+              api.sendText(user.openid, 'VOD论坛里有人回复了你：' + req.body.comment)
+            })
         })
     })
     .catch(err => {

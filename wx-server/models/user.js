@@ -9,7 +9,7 @@ var userSchema = new mongoose.Schema({
   },
   regDate: {
     type: Date,
-    default: Date.now()
+    default: Date.now
   },
   type: {
     type: Number,

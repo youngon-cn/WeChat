@@ -1,81 +1,142 @@
 <template lang="pug">
 #detail.vc-page
   header-bar
-    icon-button(slot="left", @click="back()", icon="arrow_back")
+    icon-button(slot="left", v-link="{path: '/forum'}", icon="arrow_back")
     span 帖子详情
   content(v-el:post_detail)
-    refresh-control(@refresh="getPost()", :trigger="$els.post_detail", :refreshing="refreshing")
-    .post
-      h2.post-title {{post.title}}
+    .post(v-show="post.title", transition="fade")
+      .post-title
+        h2 {{post.title}}
+        span.post-state(v-if="post.type === 0") 未处理
+        span.post-state(v-if="post.type === 1") 连载中
+        span.post-state(v-if="post.type === 2") 已上传
+        span.post-state(v-if="post.type === -1") 禁止上传
+      icon.post-operate(value="menu", @click="toogleAction()", v-if="user.type === 9 && post.type !== -1 && post.type !== 2")
       .post-info
         img(:src="post.poster.headimgurl")
         .post-info-text
-          p {{post.poster.nickname}}
+          p
+            span {{post.poster.nickname}}
+            span(v-if="post.poster.type === 9")
+              img.youngon(src="../../assets/youngon.png")
           p {{moment(post.postDate).fromNow()}}创建·{{post.pv}}次浏览
       p(v-if="post.content") {{post.content}}
       p(v-else) 无详情
-    .comments
-      h3(v-if="post.comments.length") {{post.comments.length}}条回复
+    .comments(v-show="post.title", transition="fade")
+      h3(v-if="post.nc") {{post.nc}}条回复
       h3(v-else) 还没有人回复
       list
-        item(v-for="comment in post.comments")
+        item(v-for="comment in post.comments", transition="fade", stagger="100", track-by="_id")
           item-media
             img.comment-headImg(:src="comment.commenter.headimgurl")
           item-content
             item-title-row
-              item-title {{comment.commenter.nickname}}
+              item-title
+                span {{comment.commenter.nickname}}
+                span(v-if="comment.commenter.type === 9")
+                  img.youngon(src="../../assets/youngon.png")
+                span.comment-date {{moment(comment.commentDate).fromNow()}}
               item-title-after
-                icon(value="comment", @click="tooglePopup()")
-            item-text.comment-text {{comment.content}}
+                icon(value="comment", @click="tooglePopup(comment.commenter._id, '@'+comment.commenter.nickname)")
+            item-text.comment-text
+              span.comment-to(v-if="comment.to") @{{comment.to.nickname}}
+              span {{comment.content}}
   float-button(style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="comment", @click="tooglePopup()", v-el:button)
-  popup.comment-popup(position="bottom", :show.sync="show")
+  popup.comment-popup(position="bottom", :show.sync="popup.show")
     .comment-bar
       span 回复帖子
       icon.comment-operat(value="done", @click="postComment()")
       icon.comment-operat(value="close", @click="tooglePopup()")
-    textarea.comment-form(v-model="comment")
+    textarea.comment-form(v-model="comment", :placeholder="to.nickname")
+  action-sheet(:actions="actionSheet.actions", :show.sync="actionSheet.show")
 </template>
 
 <script>
-import { toast, toogleLoading } from '../../vuex/actions'
-import { refreshing } from '../../vuex/getters'
+import { toast, postsUpdate } from '../../vuex/actions'
+import { user } from '../../vuex/getters'
 import moment from 'moment'
 moment.locale('zh-cn')
 
 export default {
   attached () {
-    this.getPost()
+    this.getPost('init')
+    this.popup.show = false
+  },
+  detached () {
     this.post = {
       poster: {},
       comments: []
     }
-    this.show = false
   },
   data () {
     return {
-      show: false,
+      popup: {
+        show: false
+      },
       post: {
         poster: {},
         comments: []
       },
-      comment: ''
+      comment: '',
+      to: {
+        _id: '',
+        nickname: ''
+      },
+      actionSheet: {
+        show: false,
+        actions: []
+      }
     }
   },
   methods: {
-    back () {
-      window.history.go(-1)
+    tooglePopup (_id, nickname) {
+      this.to = {
+        _id: _id || '',
+        nickname: nickname || ''
+      }
+      if (this.popup.show) this.comment = ''
+      this.popup.show = !this.popup.show
     },
-    tooglePopup () {
-      if (this.show) this.comment = ''
-      this.show = !this.show
+    toogleAction () {
+      this.actionSheet.show = !this.actionSheet.show
     },
-    getPost () {
-      this.toogleLoading()
+    getPost (type) {
       this.$http
-        .get('/request/forum/post?postId=' + this.$route.params.pid)
+        .get('/request/forum/post?postId=' + this.$route.params.pid + '&type=' + type)
         .then((data) => {
           this.post = data.body
-          this.toogleLoading()
+          this.actionSheet.actions = []
+          if (type === 'init') {
+            if (this.post.type === 0) {
+              this.actionSheet.actions.push({
+                name: '标记连载中',
+                click: () => {
+                  this.operate(1)
+                }
+              })
+              this.actionSheet.actions.push({
+                name: '标记已上传',
+                click: () => {
+                  this.operate(2)
+                }
+              })
+              this.actionSheet.actions.push({
+                color: 'red',
+                name: '标记禁止上传',
+                click: () => {
+                  this.operate(-1)
+                }
+              })
+            }
+            if (this.post.type === 1) {
+              this.actionSheet.actions.push({
+                name: '标记连载完毕',
+                click: () => {
+                  this.operate(2)
+                }
+              })
+            }
+          }
         }, (err) => {
           console.log(err)
         })
@@ -87,30 +148,52 @@ export default {
       this.$http
         .post('/request/forum/comment', {
           comment: this.comment,
-          postId: this.$route.params.pid
+          postId: this.$route.params.pid,
+          to: this.to._id
         })
         .then((data) => {
           if (data.body.turnUrl) {
             return (window.location.href = data.body.turnUrl)
           }
-          this.toast('回复成功')
-          this.getPost()
-          this.tooglePopup()
+          if (data.body.state === 1) {
+            this.toast('回复成功')
+            this.getPost('fresh')
+            this.postsUpdate(this.$route.query.index)
+            this.tooglePopup()
+          }
         }, (err) => {
           console.log(err)
         })
     },
     moment (date) {
       return moment(date)
+    },
+    operate (type) {
+      this.$http
+        .post('/request/forum/post/operate', {
+          type: type,
+          postId: this.$route.params.pid
+        })
+        .then((data) => {
+          if (data.body.state === 1) {
+            this.toast('操作成功')
+            this.getPost('fresh')
+            this.postsUpdate(this.$route.query.index, type)
+          } else {
+            this.toast('操作失败，请稍后重试')
+          }
+        }, (err) => {
+          console.log(err)
+        })
     }
   },
   vuex: {
     actions: {
       toast,
-      toogleLoading
+      postsUpdate
     },
     getters: {
-      refreshing
+      user
     }
   }
 }
@@ -122,11 +205,28 @@ export default {
 .post-title
   margin 10px 0
   min-height 31px
+  float left
+  width 90%
+.post-title>h2
+  display inline
+  margin 0
+.post-state
+  text-align center
+  font-size 12px
+  background-color #efefef
+  border-radius 15px
+  padding 2px 6px
+  margin-left 6px
+.post-operate
+  margin 13px 0
+  float right
 .post-info
+  clear both
   overflow hidden
   margin 4px 0
-.post-info img
+.post-info>img
   width 60px
+  height 60px
   float left
   border-radius 50%
 .post-info-text
@@ -142,10 +242,18 @@ export default {
   margin 0
   border-top 10px solid #eee
 #detail .vc-list
-  margin 0
+  margin 0 0 60px 0
 .comment-headImg
   width 40px
+  height 40px
   border-radius 50%
+.comment-date
+  margin 0 6px
+  color #7e848c
+  font-size 12px
+.comment-to
+  margin-right 4px
+  color #08c
 .comment-text
   display block
   max-height none

@@ -2,24 +2,29 @@
 #admin
   .vc-page
     header-bar
-      icon-button(slot="left", icon="menu", @click="showNav()")
+      icon-button(slot="left", icon="menu", @click="toogleNav()")
       slot(name="header")
     content
       slot(name="content")
   slot(name="plug")
-  nav-drawer(:show.sync="navShow")
-    .nav-icon-logo(slot="header") Y
-    .nav-title(slot="header") 微信历史消息管理后台
+  nav-drawer(v-if="user.type === 9", :show.sync="navShow")
+    .nav-icon-logo(slot="header")
+      img(:src="user.headimgurl")
+    .nav-title(slot="header") {{user.nickname}}
     nav-menu-header 信息管理
-    nav-menu(@click="closeNav()", icon="bubble_chart", v-link="{path: '/ygadmin/history/article/upload'}", title="文章上传")
-    nav-menu(@click="closeNav()", icon="pages", v-link="{path: '/ygadmin/history/article/manage'}", title="文章管理")
-    nav-menu(@click="closeNav()", icon="photo", v-link="{path: '/ygadmin/history/banner/upload'}", title="轮换图上传")
-    nav-menu(@click="closeNav()", icon="burst_mode", v-link="{path: '/ygadmin/history/banner/manage'}", title="轮换图管理")
+    nav-menu(@click="toogleNav()", icon="bubble_chart", v-link="{path: '/history/article/upload'}", title="文章上传")
+    nav-menu(@click="toogleNav()", icon="pages", v-link="{path: '/history/article/manage'}", title="文章管理")
+    nav-menu(@click="toogleNav()", icon="photo", v-link="{path: '/history/banner/upload'}", title="轮换图上传")
+    nav-menu(@click="toogleNav()", icon="burst_mode", v-link="{path: '/history/banner/manage'}", title="轮换图管理")
     nav-divider
-    nav-menu(@click="closeNav()", icon="info_outline", v-link="{path: '/'}", title="回主界面")
+    nav-menu(@click="toogleNav()", icon="movie_filter", v-link="{path: '/forum'}", title="VOD论坛")
+    nav-menu(@click="toogleNav()", icon="info_outline", v-link="{path: '/history'}", title="回主界面")
 </template>
 
 <script>
+import { toast } from '../../vuex/actions'
+import { user } from '../../vuex/getters'
+
 export default {
   data () {
     return {
@@ -27,36 +32,21 @@ export default {
     }
   },
   methods: {
-    showNav () {
-      this.navShow = true
+    toogleNav () {
+      if (this.user.type !== 9) return this.toast('管理员可用')
+      this.navShow = !this.navShow
+    }
+  },
+  vuex: {
+    actions: {
+      toast
     },
-    closeNav (title) {
-      this.navShow = false
+    getters: {
+      user
     }
   }
 }
 </script>
 
 <style lang="stylus">
-.nav-icon-logo
-  width 80px
-  height 80px
-  background-color #bbbfc4
-  font-size 50px
-  display -webkit-box
-  display -ms-flexbox
-  display flex
-  -webkit-box-pack center
-  -ms-flex-pack center
-  justify-content center
-  -webkit-box-align center
-  -ms-flex-align center
-  align-items center
-  color #fff
-  border-radius 50%
-
-.nav-title
-  font-size 16px
-  margin-top 16px
-  color #eee
 </style>

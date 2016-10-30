@@ -16,58 +16,50 @@ export const getUser = store => {
     })
 }
 
-export const getNewPosts = (store, _id) => {
+export const getFirstPagePosts = (store, type) => {
   store.dispatch('REFRESHING')
   Vue.http
-    .get('/request/forum/posts/new?_id=' + _id)
+    .get('/request/forum/posts/firstPage?type=' + type)
     .then((data) => {
       store.dispatch('REFRESHING')
-      if (data.body.length) {
-        store.dispatch('NEWPOSTS', data.body)
-      } else {
-        store.dispatch('TOASTS', '没有数据更新')
-      }
+      store.dispatch('FIRSTPAGEPOSTS', data.body)
     }, (err) => {
       console.log(err)
     })
 }
 
-export const getFirstPagePosts = store => {
-  store.dispatch('REFRESHING')
-  Vue.http
-    .get('/request/forum/posts/firstPage')
-    .then((data) => {
-      store.dispatch('REFRESHING')
-      store.dispatch('POSTS', data.body)
-    }, (err) => {
-      console.log(err)
-    })
-}
-
-export const getNextPagePosts = (store, _id) => {
-  store.dispatch('LOADING')
-  Vue.http
-    .get('/request/forum/posts/nextPage?_id=' + _id)
-    .then((data) => {
-      store.dispatch('LOADING')
-      if (data.body.length) {
-        store.dispatch('POSTS', data.body)
-      } else {
-        store.dispatch('TOASTS', '没有更多数据了')
-      }
-    }, (err) => {
-      console.log(err)
-    })
-}
-
-export const toogleRefreshing = store => {
-  store.dispatch('REFRESHING')
-}
-
-export const toogleLoading = store => {
-  store.dispatch('LOADING')
+export const getNextPagePosts = (store, post, type) => {
+  if (post) {
+    store.dispatch('LOADING')
+    Vue.http
+      .get('/request/forum/posts/nextPage?updateDate=' + post.updateDate + '&type=' + type)
+      .then((data) => {
+        store.dispatch('LOADING')
+        if (data.body.length) {
+          store.dispatch('MOREPOSTS', data.body)
+        }
+      }, (err) => {
+        console.log(err)
+      })
+  }
 }
 
 export const toast = (store, text) => {
   store.dispatch('TOASTS', text)
+}
+
+export const goToDetail = (store, index, scrollTop) => {
+  store.dispatch('FORUMSTATE', index, scrollTop)
+}
+
+export const postsUpdate = (store, index, type) => {
+  store.dispatch('POSTSTATE', index, type)
+}
+
+export const scrollInit = store => {
+  store.dispatch('SCROLLINIT')
+}
+
+export const setPostsType = (store, type) => {
+  store.dispatch('POSTSTYPE', type)
 }
