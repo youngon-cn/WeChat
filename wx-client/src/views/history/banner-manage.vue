@@ -30,7 +30,7 @@ export default {
       user
     }
   },
-  ready () {
+  attached () {
     this.getBarInfos()
   },
   data () {

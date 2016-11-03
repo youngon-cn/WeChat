@@ -4,6 +4,8 @@
     icon-button(slot="left", icon="menu", @click="toogleNav()")
     span VOD反馈专区
   content(v-el:post_list)
+    .vc-refresh-control(v-show="refreshing", transition="fade")
+      circular(:size="20", :border-width="2")
     list
       item(v-link="{path: '/forum/' + post._id + '?index=' + $index}", v-for="post in posts", @click="goToDetail($index, $els.post_list.scrollTop)", track-by="_id", transition="bounce")
         item-media.headImg
@@ -37,8 +39,6 @@
     nav-menu(@click="switchType(0)", icon="sentiment_dissatisfied", title="未处理")
     nav-menu(@click="switchType(2)", icon="sentiment_very_satisfied", title="已上传")
     nav-menu(@click="switchType(-1)", icon="sentiment_very_dissatisfied", title="禁止上传")
-    nav-divider
-    nav-menu(@click="toogleNav()", icon="bubble_chart", v-link="{path: '/history'}", title="技术贴")
     nav-divider
     nav-menu(@click="toogleNav()", icon="info_outline", title="关于")
   confirm(:title="confirm.title", show-icon, @sure="handlerSure()", :show.sync="confirm.show", :msg="confirm.msg")

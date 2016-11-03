@@ -4,6 +4,8 @@
     icon-button(slot="left", v-link="{path: '/forum'}", icon="arrow_back")
     span 帖子详情
   content(v-el:post_detail)
+    .vc-refresh-control(v-show="refreshing", transition="fade")
+      circular(:size="20", :border-width="2")
     .post(v-show="post.title", transition="fade")
       .post-title
         h2 {{post.title}}
@@ -52,8 +54,8 @@
 </template>
 
 <script>
-import { toast, postsUpdate } from '../../vuex/actions'
-import { user } from '../../vuex/getters'
+import { toast, postsUpdate, toogleRefreshing } from '../../vuex/actions'
+import { user, refreshing } from '../../vuex/getters'
 import moment from 'moment'
 moment.locale('zh-cn')
 
@@ -101,9 +103,11 @@ export default {
       this.actionSheet.show = !this.actionSheet.show
     },
     getPost (type) {
+      this.toogleRefreshing()
       this.$http
         .get('/request/forum/post?postId=' + this.$route.params.pid + '&type=' + type)
         .then((data) => {
+          this.toogleRefreshing()
           this.post = data.body
           this.actionSheet.actions = []
           if (type === 'init') {
@@ -138,6 +142,7 @@ export default {
             }
           }
         }, (err) => {
+          this.toogleRefreshing()
           console.log(err)
         })
     },
@@ -190,10 +195,12 @@ export default {
   vuex: {
     actions: {
       toast,
-      postsUpdate
+      postsUpdate,
+      toogleRefreshing
     },
     getters: {
-      user
+      user,
+      refreshing
     }
   }
 }

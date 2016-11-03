@@ -7,6 +7,11 @@ var User = require('../models/user')
 var Post = require('../models/post')
 var Comment = require('../models/comment')
 
+var KeywordFilter = require('keyword-filter')
+var filter = new KeywordFilter()
+var keyArrays = []
+filter.init(keyArrays)
+
 exports.wxoauth = function (req, res) {
   if (req.session.openid) {
     res.json({ "state": 1 })
@@ -117,17 +122,15 @@ exports.delPost = function (req, res) {
     .exec((err, post) => {
       if (err) return res.json({ "state": 0, "err": err })
       res.json({ "state": 1 })
-      Comment.remove({"_id": { "$in": post.comments }}, (err) => {
-        console.log(err)
-      })
+      Comment.remove({"_id": { "$in": post.comments }})
     })
 }
 
 exports.insertPost = function (req, res) {
   Post
     .create({
-      title: req.body.title,
-      content: req.body.content,
+      title: filter.replaceKeywords(req.body.title, '*'),
+      content: filter.replaceKeywords(req.body.content, '*'),
       poster: req.session.userId
     })
     .then(() => {
@@ -178,7 +181,7 @@ exports.postOperate = function (req, res) {
 
 exports.insertComment = function (req, res) {
   var detail = {
-      content: req.body.comment,
+      content: filter.replaceKeywords(req.body.content, '*'),
       commenter: req.session.userId
     }
   if (req.body.to) {

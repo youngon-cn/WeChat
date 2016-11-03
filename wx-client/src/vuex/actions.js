@@ -24,6 +24,7 @@ export const getFirstPagePosts = (store, type) => {
       store.dispatch('REFRESHING')
       store.dispatch('FIRSTPAGEPOSTS', data.body)
     }, (err) => {
+      store.dispatch('REFRESHING')
       console.log(err)
     })
 }
@@ -39,9 +40,14 @@ export const getNextPagePosts = (store, post, type) => {
           store.dispatch('MOREPOSTS', data.body)
         }
       }, (err) => {
+        store.dispatch('LOADING')
         console.log(err)
       })
   }
+}
+
+export const toogleRefreshing = (store) => {
+  store.dispatch('REFRESHING')
 }
 
 export const toast = (store, text) => {
