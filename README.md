@@ -1,3 +1,3 @@
 # 微信公众号开发
 
-![demo](https://raw.githubusercontent.com/youngon-cn/WeChat/master/Demo.png)
+![demo](https://raw.githubusercontent.com/youngon-cn/WeChat/master/QR Code.png)
