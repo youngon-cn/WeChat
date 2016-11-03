@@ -1,16 +1,14 @@
+var User = require('../models/user')
+var Post = require('../models/post')
+var Comment = require('../models/comment')
+
 var wx = require('./key/wx.json')
 var OAuth = require('wechat-oauth')
 var client = new OAuth(wx.appid, wx.appsecret)
 var WechatAPI = require('wechat-api')
 var api = new WechatAPI(wx.appid, wx.appsecret)
-var User = require('../models/user')
-var Post = require('../models/post')
-var Comment = require('../models/comment')
 
-var KeywordFilter = require('keyword-filter')
-var filter = new KeywordFilter()
-var keyArrays = []
-filter.init(keyArrays)
+var tc = require('text-censor')
 
 exports.wxoauth = function (req, res) {
   if (req.session.openid) {
@@ -129,8 +127,8 @@ exports.delPost = function (req, res) {
 exports.insertPost = function (req, res) {
   Post
     .create({
-      title: filter.replaceKeywords(req.body.title, '*'),
-      content: filter.replaceKeywords(req.body.content, '*'),
+      title: tc.filter(req.body.title),
+      content: tc.filter(req.body.content),
       poster: req.session.userId
     })
     .then(() => {
@@ -181,7 +179,7 @@ exports.postOperate = function (req, res) {
 
 exports.insertComment = function (req, res) {
   var detail = {
-      content: filter.replaceKeywords(req.body.content, '*'),
+      content: tc.filter(req.body.content),
       commenter: req.session.userId
     }
   if (req.body.to) {
