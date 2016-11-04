@@ -20,7 +20,8 @@
     "express-session": "^1.14.0",
     "mongoose": "^4.5.4",
     "multer": "^1.2.0",
-    "text-censor": "^1.0.0",
+    "request": "^2.78.0",
+    "text-censor": "^1.0.1",
     "wechat-api": "^1.29.0",
     "wechat-oauth": "^1.1.1"
   }

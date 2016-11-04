@@ -80,14 +80,4 @@ export default {
 
 .img-upload-show > img
   width 100%
-
-.pull-right
-  float right
-
-.fade-transition
-  transition all .2s linear
-  opacity 1
-
-.fade-enter, .fade-leave
-  opacity 0
 </style>

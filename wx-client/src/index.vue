@@ -75,6 +75,9 @@ img.youngon
   margin-top 16px
   color #eee
 
+.pull-right
+  float right
+
 .fade-transition {
   transition all .5s ease
   opacity 1
@@ -84,9 +87,6 @@ img.youngon
   opacity 0
 }
 
-.bounce-transition {
-  display block
-}
 .bounce-enter {
   animation: bounce-in .5s;
 }

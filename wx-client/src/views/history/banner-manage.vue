@@ -2,13 +2,10 @@
 admin-menu
   span(slot="header") 轮换图管理
   list(slot="content")
-    item-cell(v-for="banner in bannerList")
+    item-cell(v-for="banner in bannerList", track-by="_id", transition="bounce")
       item-title.title {{banner.title}}
       item-title-after
-        icon-button.operate(icon="mode_edit", color="green", fill, @click="editart(banner._id)")
         icon-button.operate(icon="delete", color="red", fill, @click="delart(banner._id)")
-    item-cell(v-if="!bannerList.length")
-      item-title 无已上传轮换图
   div(slot="plug")
     confirm(:title="confirm.title", show-icon, @sure="handlerSure", :show.sync="confirm.show", :msg="confirm.msg")
 </template>
@@ -72,10 +69,6 @@ export default {
             console.log(err)
           })
       }
-    },
-    editart (id) {
-      if (this.user.type !== 9) return this.toast('管理员可用')
-      this.toast('开发中')
     }
   }
 }

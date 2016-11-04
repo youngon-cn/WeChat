@@ -2,19 +2,17 @@
 admin-menu
   span(slot="header") 文章管理
   list(slot="content")
-    item-cell(v-for="article in articleList")
+    item-cell(v-for="article in articleList", track-by="_id", transition="bounce")
       item-title.title {{article.title}}
       item-title-after
         icon-button.operate(icon="mode_edit", color="green", fill, @click="editart(article._id)")
         icon-button.operate(icon="delete", color="red", fill, @click="delart(article._id)")
-    item-cell(v-if="!articleList.length")
-      item-title 无已上传文章
   div(slot="plug")
     confirm(:title="confirm.title", show-icon, @sure="handlerSure", :show.sync="confirm.show", :msg="confirm.msg")
 </template>
 
 <script>
-import { toast } from '../../vuex/actions'
+import { toast, toogleRefreshing } from '../../vuex/actions'
 import { user } from '../../vuex/getters'
 import adminMenu from '../../components/history/admin-menu'
 
@@ -24,7 +22,8 @@ export default {
   },
   vuex: {
     actions: {
-      toast
+      toast,
+      toogleRefreshing
     },
     getters: {
       user
@@ -45,11 +44,14 @@ export default {
   },
   methods: {
     getArtInfos () {
+      this.toogleRefreshing()
       this.$http
         .get('/request/history/article')
         .then((data) => {
+          this.toogleRefreshing()
           this.articleList = data.body
         }, (err) => {
+          this.toogleRefreshing()
           console.log(err)
         })
     },

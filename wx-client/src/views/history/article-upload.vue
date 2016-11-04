@@ -2,6 +2,9 @@
 admin-menu
   span(slot="header") 文章上传
   form-list(slot="content")
+    item-form.material(:label="'当前共有文章' + material.total_count + '篇，选中第' + material.item_count + '篇'")
+      button(raised, @click="getMaterial(material.item_count-1)") 获取
+      range(:value.sync="material.item_count", :step="1", :min="1", :max="material.total_count")
     .vc-item-form
       .vc-item-form-icon
         icon(value="assignment")
@@ -12,33 +15,34 @@ admin-menu
     text-field(label-float, label="文章标题", icon="title", :value.sync="infos.title")
     text-field(label-float, label="子标题", icon="subtitles", :value.sync="infos.subtitle")
     text-field(label-float, label="简介", icon="subject", type="textarea", :rows="3", :value.sync="infos.subject")
-    text-field(label-float, label="文章链接", icon="language", :value.sync="infos.link")
-    img-upload(item="上传缩略图", :img.sync="infos.img")
   div(slot="plug")
     float-button(style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="check", @click="upload")
 </template>
 
 <script>
-import { toast } from '../../vuex/actions'
+import { toast, toogleRefreshing } from '../../vuex/actions'
 import { user } from '../../vuex/getters'
-import imgUpload from '../../components/history/img-upload'
 import adminMenu from '../../components/history/admin-menu'
 
 export default {
   components: {
-    imgUpload,
     adminMenu
   },
   vuex: {
     actions: {
-      toast
+      toast,
+      toogleRefreshing
     },
     getters: {
       user
     }
   },
+  attached () {
+    this.getMaterial(0)
+  },
   data () {
     return {
+      material: {},
       types: [
         {
           label: '技术贴',
@@ -52,57 +56,49 @@ export default {
         }
       ],
       artType: 'a',
-      infos: {
-        title: '',
-        subtitle: '',
-        subject: '',
-        link: '',
-        img: {
-          name: null
-        }
-      },
+      infos: {},
       token: ''
     }
   },
   methods: {
+    getMaterial (number) {
+      this.toogleRefreshing()
+      this.$http
+        .get('/request/history/material?number=' + number)
+        .then((data) => {
+          this.toogleRefreshing()
+          if (data.body.state === 1) {
+            this.material = data.body.material
+            this.infos = data.body.infos
+          } else {
+            this.toast('信息初始化失败')
+          }
+        }, (err) => {
+          this.toogleRefreshing()
+          this.toast('信息初始化失败')
+          console.log(err)
+        })
+    },
     upload () {
       if (this.user.type !== 9) return this.toast('管理员可用')
       if (!this.infos.title) {
         this.toast('请输入文章标题')
-      } else if (!this.infos.subtitle) {
-        this.toast('请输入子标题')
       } else if (!this.infos.subject) {
         this.toast('请输入文章简介')
-      } else if (!this.infos.link) {
-        this.toast('请输入文章链接')
-      } else if (!this.infos.img.name) {
-        this.toast('请上传缩略图')
       } else {
-        var MyForm = new FormData()
-        MyForm.append('artType', this.artType)
-        MyForm.append('title', this.infos.title)
-        MyForm.append('subtitle', this.infos.subtitle)
-        MyForm.append('subject', this.infos.subject)
-        MyForm.append('link', this.infos.link)
-        MyForm.append('img', this.infos.img)
-        MyForm.append('token', this.token)
         this.$http
-          .post('/request/history/article', MyForm)
+          .post('/request/history/article', {
+            artType: this.artType,
+            infos: this.infos
+          })
           .then((data) => {
             if (data.body.state === 1) {
               this.toast('文章上传成功')
-              this.infos = {
-                img: {
-                  name: null
-                }
-              }
             } else {
               this.toast('文章上传失败')
             }
           }, (err) => {
-            if (err.status === 413) {
-              return this.toast('图片过大，上传失败')
-            }
+            this.toast('文章上传失败')
             console.log(err)
           })
       }
@@ -112,4 +108,17 @@ export default {
 </script>
 
 <style lang="stylus">
+.material
+  .label
+    display inline
+  .vc-button
+    width 28px
+    height 21px
+    float right
+
+.img-upload-show
+  margin 16px
+
+.img-upload-show > img
+  width 100%
 </style>

@@ -5,6 +5,8 @@
       icon-button(slot="left", icon="menu", @click="toogleNav()")
       slot(name="header")
     content
+      .vc-refresh-control(v-show="refreshing", transition="fade")
+        circular(:size="20", :border-width="2")
       slot(name="content")
   slot(name="plug")
   nav-drawer(v-if="user.type === 9", :show.sync="navShow")
@@ -17,13 +19,12 @@
     nav-menu(@click="toogleNav()", icon="photo", v-link="{path: '/history/banner/upload'}", title="轮换图上传")
     nav-menu(@click="toogleNav()", icon="burst_mode", v-link="{path: '/history/banner/manage'}", title="轮换图管理")
     nav-divider
-    nav-menu(@click="toogleNav()", icon="movie_filter", v-link="{path: '/forum'}", title="VOD论坛")
     nav-menu(@click="toogleNav()", icon="info_outline", v-link="{path: '/history'}", title="回主界面")
 </template>
 
 <script>
 import { toast } from '../../vuex/actions'
-import { user } from '../../vuex/getters'
+import { user, refreshing } from '../../vuex/getters'
 
 export default {
   data () {
@@ -42,11 +43,15 @@ export default {
       toast
     },
     getters: {
-      user
+      user,
+      refreshing
     }
   }
 }
 </script>
 
 <style lang="stylus">
+#admin
+  .vc-list, .vc-form-list
+    margin-top 0
 </style>
