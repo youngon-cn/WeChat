@@ -119,8 +119,10 @@ exports.delPost = function (req, res) {
     .findByIdAndRemove(req.query.postId)
     .exec((err, post) => {
       if (err) return res.json({ "state": 0, "err": err })
+      Comment
+        .remove({"_id": { "$in": post.comments }})
+        .exec()
       res.json({ "state": 1 })
-      Comment.remove({"_id": { "$in": post.comments }})
     })
 }
 
@@ -129,6 +131,7 @@ exports.insertPost = function (req, res) {
     .create({
       title: tc.filter(req.body.title),
       content: tc.filter(req.body.content),
+      plantform: req.body.plantform,
       poster: req.session.userId
     })
     .then(() => {
@@ -168,7 +171,7 @@ exports.postOperate = function (req, res) {
           User
             .findById(post.poster)
             .exec((err, user) => {
-              api.sendText(user.openid, 'VOD论坛里有人回复了你：' + req.body.comment)
+              api.sendText(user.openid, 'VOD论坛里有人处理了你的请求')
             })
         })
     })
@@ -199,7 +202,7 @@ exports.insertComment = function (req, res) {
           User
             .findById(post.poster)
             .exec((err, user) => {
-              api.sendText(user.openid, 'VOD论坛里有人回复了你：' + req.body.comment)
+              api.sendText(user.openid, 'VOD论坛里有人回复了你')
             })
         })
     })

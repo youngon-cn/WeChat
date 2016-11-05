@@ -29,7 +29,7 @@
             item-title.sub-title 创建于：{{moment(post.postDate).format('YYYY-MM-DD HH:mm:ss')}}
             item-title-after {{moment(post.postDate).fromNow()}}
     infinite-scroll(@load="getNextPagePosts(posts[posts.length-1], postsType)", :trigger="$els.post_list", :loading="loading")
-    float-button(style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="mode_edit", v-link="{path: '/forum/publish'}")
+    float-button(v-show="user.openid", transition="fade", style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="mode_edit", v-link="{path: '/forum/publish'}")
   nav-drawer(:show.sync="navShow")
     .nav-icon-logo(slot="header")
       img(:src="user.headimgurl")

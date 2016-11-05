@@ -6,6 +6,13 @@
   content
     form-list
       text-field(label-float, label="帖子标题", icon="title", :value.sync="title")
+      .vc-item-form
+        .vc-item-form-icon
+          icon(value="live_tv")
+        .vc-item-form-content
+          label.vc-text-field
+            .label 资源在播平台
+            checkbox(v-for="item in plantformData", name="plantform", :model.sync="plantform", :value="item", :label="item")
       text-field(label-float, label="帖子内容（可留空）", icon="subject", type="textarea", :rows="4", :value.sync="content")
   float-button(style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="check", @click="publish")
 </template>
@@ -18,7 +25,9 @@ export default {
   data () {
     return {
       title: '',
-      content: ''
+      content: '',
+      plantformData: ['优酷', '爱奇艺', '乐视', '腾讯视频', '搜狐', '芒果TV', '哔哩哔哩'],
+      plantform: []
     }
   },
   methods: {
@@ -29,6 +38,7 @@ export default {
       this.$http
         .post('/request/forum/post', {
           title: this.title,
+          plantform: this.plantform,
           content: this.content
         })
         .then((data) => {

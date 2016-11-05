@@ -19,7 +19,7 @@ list(v-if="tabActive === 1")
   item(link, v-for="article in articleList.b", track-by="_id", transition="fade")
     a.link(:href="article.link")
     item-media
-      .thumb(v-bind:style="{ background: 'url(' + article.img + ')' }")
+      .thumb(v-bind:style="{ backgroundImage: 'url(' + article.img + ')' }")
     item-content
       item-title-row
         item-title {{article.title}}
@@ -29,7 +29,7 @@ list(v-if="tabActive === 2")
   item(link, v-for="article in articleList.c", track-by="_id", transition="fade")
     a.link(:href="article.link")
     item-media
-      .thumb(v-bind:style="{ background: 'url(' + article.img + ')' }")
+      .thumb(v-bind:style="{ backgroundImage: 'url(' + article.img + ')' }")
     item-content
       item-title-row
         item-title {{article.title}}

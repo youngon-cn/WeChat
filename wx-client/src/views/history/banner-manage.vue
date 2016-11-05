@@ -76,7 +76,8 @@ export default {
 
 <style lang="stylus">
 .title
-  font-size 22px
+  font-size 16px
+  white-space normal
 .operate
   margin-left 10px
 </style>

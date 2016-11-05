@@ -24,6 +24,9 @@
           p {{moment(post.postDate).fromNow()}}创建·{{post.pv}}次浏览
       p(v-if="post.content") {{post.content}}
       p(v-else) 无详情
+      .plantform(v-if="post.plantform.length")
+        h4 资源在播平台：
+        span(v-for="plantform in post.plantform") {{plantform}}
     .comments(v-show="post.title", transition="fade")
       h3(v-if="post.nc") {{post.nc}}条回复
       h3(v-else) 还没有人回复
@@ -43,7 +46,7 @@
             item-text.comment-text
               span.comment-to(v-if="comment.to") @{{comment.to.nickname}}
               span {{comment.content}}
-  float-button(style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="comment", @click="tooglePopup()", v-el:button)
+  float-button(v-show="user.openid", transition="fade", style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="comment", @click="tooglePopup()", v-el:button)
   popup.comment-popup(position="bottom", :show.sync="popup.show")
     .comment-bar
       span 回复帖子
@@ -67,7 +70,8 @@ export default {
   detached () {
     this.post = {
       poster: {},
-      comments: []
+      comments: [],
+      plantform: []
     }
   },
   data () {
@@ -77,7 +81,8 @@ export default {
       },
       post: {
         poster: {},
-        comments: []
+        comments: [],
+        plantform: []
       },
       comment: '',
       to: {
@@ -152,7 +157,7 @@ export default {
       }
       this.$http
         .post('/request/forum/comment', {
-          comment: this.comment,
+          content: this.comment,
           postId: this.$route.params.pid,
           to: this.to._id
         })
@@ -244,6 +249,16 @@ export default {
 .post-info p
   margin 0
   line-height 24px
+.plantform
+  padding 4px 6px
+  margin 6px 0
+  background-color #efefef
+  border-left 4px solid #ccc
+.plantform
+  h4
+    margin 0
+  span
+    margin-right 8px
 .comments>h3
   padding 10px 18px
   margin 0

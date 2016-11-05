@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 
 var postSchema = new mongoose.Schema({
   title: String,
+  plantform: [String],
   content: String,
   poster: {
     type: mongoose.Schema.Types.ObjectId,

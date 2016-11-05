@@ -4,7 +4,7 @@ var path = require('path')
 var bodyParser = require('body-parser')
 var session = require('express-session')
 var mongoose = require('mongoose')
-var mongoStore = require('connect-mongo')(session)
+var RedisStore = require('connect-redis')(session)
 var admin = require('./controllers/key/mongodb.json')
 
 mongoose.Promise = global.Promise
@@ -17,10 +17,11 @@ app.use(session({
   resave: false,
   saveUninitialized: true,
   name: 'wx',
-  cookie: { maxAge: 14 * 24 * 60 * 60 * 1000 },
-  store: new mongoStore({
-    url: 'mongodb://'+admin.name+':'+admin.pwd+'@115.159.119.147/wx',
-    collection: 'sessions'
+  cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 },
+  store: new RedisStore({
+    host: "115.159.119.147",
+    port: 6379,
+    pass: admin.pwd
   })
 }))
 
