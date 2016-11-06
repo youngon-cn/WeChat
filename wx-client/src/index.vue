@@ -1,11 +1,12 @@
 <template lang="pug">
 router-view(keep-alive)
 toast(v-for="toast in toasts", :text="toast.text", :center="toast.center")
+alert(:title="alert.title", :type="alert.type", :show.sync="alert.show", :msg="alert.msg")
 </template>
 
 <script>
 import { getUser } from './vuex/actions'
-import { toasts } from './vuex/getters'
+import { toasts, alert } from './vuex/getters'
 
 export default {
   ready () {
@@ -37,7 +38,8 @@ export default {
       getUser
     },
     getters: {
-      toasts
+      toasts,
+      alert
     }
   }
 }
@@ -78,6 +80,7 @@ img.youngon
 .pull-right
   float right
 
+// animation
 .fade-transition {
   transition all .5s ease
   opacity 1
@@ -119,4 +122,8 @@ img.youngon
     opacity 0.3
   }
 }
+
+// fix
+.vc-nav-menu-content
+  display block
 </style>

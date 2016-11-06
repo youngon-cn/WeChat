@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import VueResource from 'vue-resource'
+import VueTouch from 'vue-touch'
 import VueCarbon from 'vue-carbon'
 import 'vue-carbon/dist/vue-carbon.css'
 import store from './vuex/store'
@@ -8,6 +9,7 @@ import app from './index'
 
 Vue.use(VueRouter)
 Vue.use(VueResource)
+Vue.use(VueTouch)
 Vue.use(VueCarbon)
 
 const App = Vue.extend({

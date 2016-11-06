@@ -11,7 +11,10 @@ const state = {
   loading: false,
   refreshing: false,
   scrollTop: 0,
-  toasts: []
+  toasts: [],
+  alert: {
+    show: false
+  }
 }
 
 const mutations = {
@@ -49,6 +52,9 @@ const mutations = {
   TOASTS (state, data) {
     state.toasts.push({ text: data })
     setTimeout(() => state.toasts.splice(0, 1), 2000)
+  },
+  ALERT (state, data) {
+    state.alert = data
   }
 }
 

@@ -3,7 +3,7 @@
   header-bar
     icon-button(slot="left", v-link="{path: '/forum'}", icon="arrow_back")
     span 帖子详情
-  content(v-el:post_detail)
+  content(v-el:post_detail, v-touch:swiperight="back()")
     .vc-refresh-control(v-show="refreshing", transition="fade")
       circular(:size="20", :border-width="2")
     .post(v-show="post.title", transition="fade")
@@ -41,7 +41,7 @@
                 span(v-if="comment.commenter.type === 9")
                   img.youngon(src="../../assets/youngon.png")
                 span.comment-date {{moment(comment.commentDate).fromNow()}}
-              item-title-after
+              item-title-after(v-show="user.openid", transition="fade")
                 icon(value="comment", @click="tooglePopup(comment.commenter._id, '@'+comment.commenter.nickname)")
             item-text.comment-text
               span.comment-to(v-if="comment.to") @{{comment.to.nickname}}
@@ -96,6 +96,9 @@ export default {
     }
   },
   methods: {
+    back () {
+      window.history.go(-1)
+    },
     tooglePopup (_id, nickname) {
       this.to = {
         _id: _id || '',

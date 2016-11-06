@@ -1,5 +1,5 @@
 <template lang="pug">
-#forum.vc-page
+#forum.vc-page(v-touch:swipeleft="toogleNav('close')", v-touch:swiperight="toogleNav('open')")
   header-bar
     icon-button(slot="left", icon="menu", @click="toogleNav()")
     span VOD反馈专区
@@ -40,12 +40,12 @@
     nav-menu(@click="switchType(2)", icon="sentiment_very_satisfied", title="已上传")
     nav-menu(@click="switchType(-1)", icon="sentiment_very_dissatisfied", title="禁止上传")
     nav-divider
-    nav-menu(@click="toogleNav()", icon="info_outline", title="关于")
+    nav-menu(@click="about()", icon="info_outline", title="关于")
   confirm(:title="confirm.title", show-icon, @sure="handlerSure()", :show.sync="confirm.show", :msg="confirm.msg")
 </template>
 
 <script>
-import { getFirstPagePosts, getNextPagePosts, goToDetail, setPostsType, toast } from '../../vuex/actions'
+import { getFirstPagePosts, getNextPagePosts, goToDetail, setPostsType, toast, alert } from '../../vuex/actions'
 import { user, refreshing, loading, posts, postsType, scrollTop } from '../../vuex/getters'
 import moment from 'moment'
 moment.locale('zh-cn')
@@ -67,12 +67,20 @@ export default {
     }
   },
   methods: {
-    toogleNav () {
+    toogleNav (type) {
       if (!this.user.nickname) {
         this.toast('请在微信中使用')
-      } else {
-        this.navShow = !this.navShow
+        return
       }
+      if (type === 'open') {
+        this.navShow = true
+        return
+      }
+      if (type === 'close') {
+        this.navShow = false
+        return
+      }
+      this.navShow = !this.navShow
     },
     moment (date) {
       return moment(date)
@@ -100,6 +108,12 @@ export default {
             console.log(err)
           })
       }
+    },
+    about () {
+      this.toogleNav()
+      setTimeout(() => {
+        this.alert('关于', 'copyright©阳光网站', 'info')
+      }, 400)
     }
   },
   vuex: {
@@ -108,7 +122,8 @@ export default {
       getNextPagePosts,
       goToDetail,
       setPostsType,
-      toast
+      toast,
+      alert
     },
     getters: {
       user,

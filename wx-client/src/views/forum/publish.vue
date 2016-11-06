@@ -3,7 +3,7 @@
   header-bar
     icon-button(slot="left", v-link="{path: '/forum'}", icon="arrow_back")
     span 发布帖子
-  content
+  content(v-touch:swiperight="back()")
     form-list
       text-field(label-float, label="帖子标题", icon="title", :value.sync="title")
       .vc-item-form
@@ -31,6 +31,9 @@ export default {
     }
   },
   methods: {
+    back () {
+      window.history.go(-1)
+    },
     publish () {
       if (!this.title) {
         return this.toast('请输入标题')
@@ -49,6 +52,7 @@ export default {
             this.toast('发布成功')
             setTimeout(() => {
               this.title = ''
+              this.plantform = []
               this.content = ''
               this.setPostsType(9)
               this.getFirstPagePosts(9)

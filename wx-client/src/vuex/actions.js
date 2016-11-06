@@ -50,10 +50,6 @@ export const toogleRefreshing = (store) => {
   store.dispatch('REFRESHING')
 }
 
-export const toast = (store, text) => {
-  store.dispatch('TOASTS', text)
-}
-
 export const goToDetail = (store, index, scrollTop) => {
   store.dispatch('FORUMSTATE', index, scrollTop)
 }
@@ -68,4 +64,17 @@ export const scrollInit = store => {
 
 export const setPostsType = (store, type) => {
   store.dispatch('POSTSTYPE', type)
+}
+
+export const toast = (store, text) => {
+  store.dispatch('TOASTS', text)
+}
+
+export const alert = (store, title, msg, type) => {
+  store.dispatch('ALERT', {
+    title: title,
+    msg: msg,
+    type: type,
+    show: true
+  })
 }
