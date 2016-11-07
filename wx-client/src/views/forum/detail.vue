@@ -1,7 +1,7 @@
 <template lang="pug">
 #detail.vc-page
   header-bar
-    icon-button(slot="left", @click="back()", icon="arrow_back")
+    icon-button(slot="left", v-link="{path: '/forum'}", icon="arrow_back")
     span 帖子详情
   content(v-el:post_detail, v-touch:swiperight="back()")
     .vc-refresh-control(v-show="refreshing", transition="fade")
@@ -57,7 +57,7 @@
 </template>
 
 <script>
-import { toast, postsUpdate, toogleRefreshing, back } from '../../vuex/actions'
+import { toast, postsUpdate, toogleRefreshing } from '../../vuex/actions'
 import { user, refreshing } from '../../vuex/getters'
 import moment from 'moment'
 moment.locale('zh-cn')
@@ -67,7 +67,7 @@ export default {
     setTimeout(() => {
       this.getPost('init')
       this.popup.show = false
-    }, 150)
+    }, 400)
   },
   detached () {
     this.post = {
@@ -98,6 +98,9 @@ export default {
     }
   },
   methods: {
+    back () {
+      window.history.go(-1)
+    },
     tooglePopup (_id, nickname) {
       this.to = {
         _id: _id || '',
@@ -203,8 +206,7 @@ export default {
     actions: {
       toast,
       postsUpdate,
-      toogleRefreshing,
-      back
+      toogleRefreshing
     },
     getters: {
       user,

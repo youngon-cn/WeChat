@@ -1,11 +1,12 @@
 <template lang="pug">
 #publish.vc-page
   header-bar
-    icon-button(slot="left", @click="back()", icon="arrow_back")
+    icon-button(slot="left", v-link="{path: '/forum'}", icon="arrow_back")
     span 发布帖子
   content(v-touch:swiperight="back()")
     form-list
       text-field(label-float, label="帖子标题", icon="title", :value.sync="title")
+      text-field(label-float, label="帖子内容（可留空）", icon="subject", type="textarea", :rows="4", :value.sync="content")
       .vc-item-form
         .vc-item-form-icon
           icon(value="live_tv")
@@ -13,12 +14,11 @@
           label.vc-text-field
             .label 资源在播平台
             checkbox(v-for="item in plantformData", name="plantform", :model.sync="plantform", :value="item", :label="item")
-      text-field(label-float, label="帖子内容（可留空）", icon="subject", type="textarea", :rows="4", :value.sync="content")
   float-button(style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="check", @click="publish")
 </template>
 
 <script>
-import { toast, getFirstPagePosts, scrollInit, setPostsType, back } from '../../vuex/actions'
+import { toast, getFirstPagePosts, scrollInit, setPostsType } from '../../vuex/actions'
 import { posts } from '../../vuex/getters'
 
 export default {
@@ -31,6 +31,9 @@ export default {
     }
   },
   methods: {
+    back () {
+      window.history.go(-1)
+    },
     publish () {
       if (!this.title) {
         return this.toast('请输入标题')
@@ -67,8 +70,7 @@ export default {
       toast,
       getFirstPagePosts,
       scrollInit,
-      setPostsType,
-      back
+      setPostsType
     },
     getters: {
       posts

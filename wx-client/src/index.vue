@@ -1,12 +1,12 @@
 <template lang="pug">
-router-view(keep-alive, :transition="slide")
+router-view(keep-alive, :transition="transitionName")
 toast(v-for="toast in toasts", :text="toast.text", :center="toast.center")
 alert(:title="alert.title", :type="alert.type", :show.sync="alert.show", :msg="alert.msg")
 </template>
 
 <script>
 import { getUser } from './vuex/actions'
-import { toasts, alert, isBack } from './vuex/getters'
+import { toasts, alert } from './vuex/getters'
 
 export default {
   ready () {
@@ -14,19 +14,19 @@ export default {
     var isWeixin = ua.indexOf('micromessenger') !== -1
     this.tryAuth(3, isWeixin)
     setTimeout(() => {
-      this.isFirst = false
+      this.transitionName = 'slideIn'
     }, 300)
   },
   data () {
     return {
-      isFirst: true
+      transitionName: 'fade'
     }
   },
-  computed: {
-    slide () {
-      if (this.isFirst && !this.isBack) return 'fade'
-      if (this.isBack) return 'slideOut'
-      if (!this.isBack) return 'slideIn'
+  watch: {
+    '$route' (to, from) {
+      const toDepth = to.path.split('/').length
+      const fromDepth = from.path.split('/').length
+      this.transitionName = toDepth < fromDepth ? 'slideIn' : 'slideOut'
     }
   },
   methods: {
@@ -54,8 +54,7 @@ export default {
     },
     getters: {
       toasts,
-      alert,
-      isBack
+      alert
     }
   }
 }

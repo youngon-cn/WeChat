@@ -1,7 +1,7 @@
 <template lang="pug">
 #person.vc-page
   content(v-touch:swiperight="back()")
-    icon-button(icon="arrow_back", @click="back()")
+    icon-button(icon="arrow_back", v-link="{path: '/forum'}")
     .person-info
       .person-bg
       img.person-headImg(:src="user.headimgurl", v-show="user.nickname", transition="fade")
@@ -79,7 +79,7 @@
 </template>
 
 <script>
-import { goToDetail, back } from '../../vuex/actions'
+import { goToDetail } from '../../vuex/actions'
 import { user } from '../../vuex/getters'
 import moment from 'moment'
 moment.locale('zh-cn')
@@ -99,6 +99,9 @@ export default {
     }
   },
   methods: {
+    back () {
+      window.history.go(-1)
+    },
     tabBarClick (index) {
       this.tabActive = index
     },
@@ -128,8 +131,7 @@ export default {
   },
   vuex: {
     actions: {
-      goToDetail,
-      back
+      goToDetail
     },
     getters: {
       user

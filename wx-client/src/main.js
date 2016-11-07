@@ -7,6 +7,10 @@ import 'vue-carbon/dist/vue-carbon.css'
 import store from './vuex/store'
 import app from './index'
 
+VueTouch.config.swipe = {
+  direction: 'horizontal'
+}
+
 Vue.use(VueRouter)
 Vue.use(VueResource)
 Vue.use(VueTouch)
