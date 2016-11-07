@@ -3,6 +3,9 @@ var mongoose = require('mongoose');
 var userSchema = new mongoose.Schema({
   nickname: String,
   headimgurl: String,
+  sex: Number,
+  province: String,
+  city: String,
   openid: {
     type: String,
     unique: true

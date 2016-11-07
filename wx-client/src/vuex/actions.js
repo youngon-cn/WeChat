@@ -78,3 +78,8 @@ export const alert = (store, title, msg, type) => {
     show: true
   })
 }
+
+export const back = (store) => {
+  store.dispatch('ISBACK')
+  window.history.go(-1)
+}

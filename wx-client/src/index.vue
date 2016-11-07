@@ -1,18 +1,33 @@
 <template lang="pug">
-router-view(keep-alive)
+router-view(keep-alive, :transition="slide")
 toast(v-for="toast in toasts", :text="toast.text", :center="toast.center")
 alert(:title="alert.title", :type="alert.type", :show.sync="alert.show", :msg="alert.msg")
 </template>
 
 <script>
 import { getUser } from './vuex/actions'
-import { toasts, alert } from './vuex/getters'
+import { toasts, alert, isBack } from './vuex/getters'
 
 export default {
   ready () {
     var ua = navigator.userAgent.toLowerCase()
     var isWeixin = ua.indexOf('micromessenger') !== -1
     this.tryAuth(3, isWeixin)
+    setTimeout(() => {
+      this.isFirst = false
+    }, 300)
+  },
+  data () {
+    return {
+      isFirst: true
+    }
+  },
+  computed: {
+    slide () {
+      if (this.isFirst && !this.isBack) return 'fade'
+      if (this.isBack) return 'slideOut'
+      if (!this.isBack) return 'slideIn'
+    }
   },
   methods: {
     tryAuth (time, isWeixin) {
@@ -39,7 +54,8 @@ export default {
     },
     getters: {
       toasts,
-      alert
+      alert,
+      isBack
     }
   }
 }
@@ -81,6 +97,15 @@ img.youngon
   float right
 
 // animation
+.slideIn-transition, .slideOut-transition
+  transition all .5s ease
+
+.slideIn-enter, .slideOut-leave
+  transform translate(100%, 0)
+
+.slideIn-leave, .slideOut-enter
+  transform translate(-100%, 0)
+
 .fade-transition {
   transition all .5s ease
   opacity 1
@@ -124,6 +149,40 @@ img.youngon
 }
 
 // fix
+.vc-list
+  margin 0
+
 .vc-nav-menu-content
   display block
+
+.vc-nav-drawer
+  width 100%
+  padding-right 20%
+  background-color transparent
+  z-index 99999999
+
+#forum, #person
+  .vc-item
+    height 100px
+    padding-left 10px
+  .vc-item-title-row
+    margin 1px 0
+  .vc-item-media+.vc-item-content
+    padding-left 64px
+  .headImg
+    position absolute
+    width 60px
+    height 100px
+  .headImg > p
+    text-align center
+    font-size 12px
+    background-color #efefef
+    border-radius 15px
+    margin 2px 5px
+    padding 1px 0
+  .headImg > img
+    max-width 46px
+    margin 3px 7px 7px
+  .sub-title
+    font-size 14px
 </style>

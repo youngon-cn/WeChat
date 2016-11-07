@@ -1,7 +1,7 @@
 <template lang="pug">
 #publish.vc-page
   header-bar
-    icon-button(slot="left", v-link="{path: '/forum'}", icon="arrow_back")
+    icon-button(slot="left", @click="back()", icon="arrow_back")
     span 发布帖子
   content(v-touch:swiperight="back()")
     form-list
@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import { toast, getFirstPagePosts, scrollInit, setPostsType } from '../../vuex/actions'
+import { toast, getFirstPagePosts, scrollInit, setPostsType, back } from '../../vuex/actions'
 import { posts } from '../../vuex/getters'
 
 export default {
@@ -31,9 +31,6 @@ export default {
     }
   },
   methods: {
-    back () {
-      window.history.go(-1)
-    },
     publish () {
       if (!this.title) {
         return this.toast('请输入标题')
@@ -70,7 +67,8 @@ export default {
       toast,
       getFirstPagePosts,
       scrollInit,
-      setPostsType
+      setPostsType,
+      back
     },
     getters: {
       posts

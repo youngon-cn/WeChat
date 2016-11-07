@@ -14,7 +14,8 @@ const state = {
   toasts: [],
   alert: {
     show: false
-  }
+  },
+  isBack: false
 }
 
 const mutations = {
@@ -55,6 +56,12 @@ const mutations = {
   },
   ALERT (state, data) {
     state.alert = data
+  },
+  ISBACK (state) {
+    state.isBack = true
+    setTimeout(() => {
+      state.isBack = false
+    }, 300)
   }
 }
 

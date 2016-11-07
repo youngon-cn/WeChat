@@ -1,7 +1,7 @@
 <template lang="pug">
 #detail.vc-page
   header-bar
-    icon-button(slot="left", v-link="{path: '/forum'}", icon="arrow_back")
+    icon-button(slot="left", @click="back()", icon="arrow_back")
     span 帖子详情
   content(v-el:post_detail, v-touch:swiperight="back()")
     .vc-refresh-control(v-show="refreshing", transition="fade")
@@ -41,12 +41,12 @@
                 span(v-if="comment.commenter.type === 9")
                   img.youngon(src="../../assets/youngon.png")
                 span.comment-date {{moment(comment.commentDate).fromNow()}}
-              item-title-after(v-show="user.openid", transition="fade")
+              item-title-after(v-show="user.nickname", transition="fade")
                 icon(value="comment", @click="tooglePopup(comment.commenter._id, '@'+comment.commenter.nickname)")
             item-text.comment-text
               span.comment-to(v-if="comment.to") @{{comment.to.nickname}}
               span {{comment.content}}
-  float-button(v-show="user.openid", transition="fade", style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="comment", @click="tooglePopup()", v-el:button)
+  float-button(v-show="user.nickname", transition="fade", style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="comment", @click="tooglePopup()", v-el:button)
   popup.comment-popup(position="bottom", :show.sync="popup.show")
     .comment-bar
       span 回复帖子
@@ -57,15 +57,17 @@
 </template>
 
 <script>
-import { toast, postsUpdate, toogleRefreshing } from '../../vuex/actions'
+import { toast, postsUpdate, toogleRefreshing, back } from '../../vuex/actions'
 import { user, refreshing } from '../../vuex/getters'
 import moment from 'moment'
 moment.locale('zh-cn')
 
 export default {
   attached () {
-    this.getPost('init')
-    this.popup.show = false
+    setTimeout(() => {
+      this.getPost('init')
+      this.popup.show = false
+    }, 150)
   },
   detached () {
     this.post = {
@@ -96,9 +98,6 @@ export default {
     }
   },
   methods: {
-    back () {
-      window.history.go(-1)
-    },
     tooglePopup (_id, nickname) {
       this.to = {
         _id: _id || '',
@@ -204,7 +203,8 @@ export default {
     actions: {
       toast,
       postsUpdate,
-      toogleRefreshing
+      toogleRefreshing,
+      back
     },
     getters: {
       user,

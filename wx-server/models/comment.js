@@ -13,6 +13,10 @@ var commentSchema = new mongoose.Schema({
   to: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
+  },
+  belong: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Post'
   }
 })
 

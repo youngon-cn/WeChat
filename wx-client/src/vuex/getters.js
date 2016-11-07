@@ -6,3 +6,4 @@ export const loading = state => state.loading
 export const scrollTop = state => state.scrollTop
 export const toasts = state => state.toasts
 export const alert = state => state.alert
+export const isBack = state => state.isBack

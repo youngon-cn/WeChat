@@ -1,9 +1,9 @@
 <template lang="pug">
-#forum.vc-page(v-touch:swipeleft="toogleNav('close')", v-touch:swiperight="toogleNav('open')")
+#forum.vc-page
   header-bar
     icon-button(slot="left", icon="menu", @click="toogleNav()")
     span VOD反馈专区
-  content(v-el:post_list)
+  content(v-el:post_list, v-touch:swiperight="toogleNav('open')", v-touch:swipeleft="forward()")
     .vc-refresh-control(v-show="refreshing", transition="fade")
       circular(:size="20", :border-width="2")
     list
@@ -29,9 +29,10 @@
             item-title.sub-title 创建于：{{moment(post.postDate).format('YYYY-MM-DD HH:mm:ss')}}
             item-title-after {{moment(post.postDate).fromNow()}}
     infinite-scroll(@load="getNextPagePosts(posts[posts.length-1], postsType)", :trigger="$els.post_list", :loading="loading")
-    float-button(v-show="user.openid", transition="fade", style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="mode_edit", v-link="{path: '/forum/publish'}")
-  nav-drawer(:show.sync="navShow")
-    .nav-icon-logo(slot="header")
+    float-button(v-show="user.nickname", transition="fade", style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="mode_edit", v-link="{path: '/forum/publish'}")
+  overlay(v-if="navShow")
+  nav-drawer(:overlay="false", :show.sync="navShow", v-touch:swipeleft="toogleNav('close')")
+    .nav-icon-logo(slot="header", v-link="{path: '/forum/person/' + user._id}")
       img(:src="user.headimgurl")
     .nav-title(slot="header") {{user.nickname}}
     nav-menu-header 分类
@@ -67,8 +68,13 @@ export default {
     }
   },
   methods: {
+    forward () {
+      window.history.go(1)
+    },
     toogleNav (type) {
-      if (!this.user.nickname) {
+      var ua = navigator.userAgent.toLowerCase()
+      var isWeixin = ua.indexOf('micromessenger') !== -1
+      if (!isWeixin) {
         this.toast('请在微信中使用')
         return
       }
@@ -138,34 +144,4 @@ export default {
 </script>
 
 <style lang="stylus">
-#forum
-  .vc-item
-    height 100px
-    padding-left 10px
-  .vc-item-title-row
-    margin 1px 0
-  .vc-list
-    margin 0
-  .vc-item-media+.vc-item-content
-    padding-left 64px
-
-.headImg
-  position absolute
-  width 60px
-  height 100px
-
-.headImg > p
-  text-align center
-  font-size 12px
-  background-color #efefef
-  border-radius 15px
-  margin 2px 5px
-  padding 1px 0
-
-.headImg > img
-  max-width 46px
-  margin 3px 7px 7px
-
-.sub-title
-  font-size 14px
 </style>

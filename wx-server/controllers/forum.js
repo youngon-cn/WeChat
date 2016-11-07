@@ -11,8 +11,8 @@ var api = new WechatAPI(wx.appid, wx.appsecret)
 var tc = require('text-censor')
 
 exports.wxoauth = function (req, res) {
-  if (req.session.openid) {
-    res.json({ "state": 1 })
+  if (req.query.type === 'fresh') {
+    res.json({"turnUrl" : "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxcf692473c3e08053&redirect_uri=" + req.headers.referer + "&response_type=code&scope=snsapi_userinfo&state=wxoauth#wechat_redirect"})
   } else {
     client.getUserByCode(req.query.code, (err, result) => {
       if (err) {
@@ -22,6 +22,12 @@ exports.wxoauth = function (req, res) {
           .findOne({ openid: result.openid })
           .exec((err, user) => {
             if (user) {
+              user.nickname = result.nickname
+              user.headimgurl = result.headimgurl
+              user.sex = result.sex
+              user.province = result.province
+              user.city = result.city
+              user.save()
               req.session.userId = user._id
               req.session.openid = user.openid
               req.session.type = user.type
@@ -31,7 +37,10 @@ exports.wxoauth = function (req, res) {
                 .create({
                   openid: result.openid,
                   nickname: result.nickname,
-                  headimgurl: result.headimgurl
+                  headimgurl: result.headimgurl,
+                  sex: result.sex,
+                  province: result.province,
+                  city: result.city
                 })
                 .then((user) => {
                   req.session.userId = user._id
@@ -54,15 +63,18 @@ exports.wxoauth = function (req, res) {
 exports.info = function (req, res) {
   User
     .findById(req.session.userId)
+    .select('-openid')
     .exec((err, user) => {
       user ? res.send(user) : res.status(404)
     })
 }
 
 exports.getFirstPagePosts = function (req, res) {
-  var type = req.query.type
+  var term = {}
+  if (req.query.type !== "9") term.type = req.query.type
+  if (req.query.poster) term.poster = req.query.poster
   Post
-    .find(type === "9" ? null : {'type': type})
+    .find(term)
     .select('-comments -content')
     .sort({updateDate: -1, _id: -1})
     .limit(10)
@@ -76,9 +88,20 @@ exports.getFirstPagePosts = function (req, res) {
 }
 
 exports.getNextPagePosts = function (req, res) {
-  var type = req.query.type
+  var term = {}
+  if (req.query.poster) term.poster = req.query.poster
+  if (req.query.type !== "9") {
+    term = {
+      'updateDate': { '$lt': req.query.updateDate},
+      'type': req.query.type
+    }
+  } else {
+    term = {
+      'updateDate': { '$lt': req.query.updateDate}
+    }
+  }
   Post
-    .find(type === "9" ? {'updateDate': { '$lt': req.query.updateDate}} : {'updateDate': { '$lt': req.query.updateDate}, 'type': type})
+    .find(term)
     .select('-comments -content')
     .sort({updateDate: -1, _id: -1})
     .limit(10)
@@ -167,12 +190,12 @@ exports.postOperate = function (req, res) {
           post.updateDate = Date.now()
           post.nc++
           post.save()
+          // User
+          //   .findById(post.poster)
+          //   .exec((err, user) => {
+          //     api.sendText(user.openid, 'VOD论坛里有人处理了你的请求')
+          //   })
           res.json({ "state": 1 })
-          User
-            .findById(post.poster)
-            .exec((err, user) => {
-              api.sendText(user.openid, 'VOD论坛里有人处理了你的请求')
-            })
         })
     })
     .catch(err => {
@@ -183,7 +206,8 @@ exports.postOperate = function (req, res) {
 exports.insertComment = function (req, res) {
   var detail = {
       content: tc.filter(req.body.content),
-      commenter: req.session.userId
+      commenter: req.session.userId,
+      belong: req.body.postId
     }
   if (req.body.to) {
     detail.to = req.body.to
@@ -198,12 +222,12 @@ exports.insertComment = function (req, res) {
           post.updateDate = Date.now()
           post.nc++
           post.save()
+          // User
+          //   .findById(post.poster)
+          //   .exec((err, user) => {
+          //     api.sendText(user.openid, 'VOD论坛里有人回复了你')
+          //   })
           res.json({ "state": 1 })
-          User
-            .findById(post.poster)
-            .exec((err, user) => {
-              api.sendText(user.openid, 'VOD论坛里有人回复了你')
-            })
         })
     })
     .catch(err => {

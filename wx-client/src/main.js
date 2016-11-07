@@ -18,14 +18,23 @@ const App = Vue.extend({
 })
 
 const router = new VueRouter({
-  history: true,
-  saveScrollPosition: true
+  history: true
 })
 
 router.map({
   '/forum': {
     component (resolve) {
       require(['./views/forum/'], resolve)
+    }
+  },
+  '/forum/person/:pid': {
+    component (resolve) {
+      require(['./views/forum/person.vue'], resolve)
+    }
+  },
+  '/forum/person': {
+    component (resolve) {
+      require(['./views/forum/person.vue'], resolve)
     }
   },
   '/forum/publish': {
