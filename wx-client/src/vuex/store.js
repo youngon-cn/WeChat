@@ -32,13 +32,14 @@ const mutations = {
   POSTSTYPE (state, data) {
     state.postsType = data
   },
-  FORUMSTATE (state, index, scrollTop) {
-    state.posts[index].pv++
-    state.scrollTop = scrollTop
-  },
-  POSTSTATE (state, index, type) {
-    state.posts[index].nc++
+  POSTSTATE (state, index, pv, nc, type) {
+    if (!state.posts[index]) return
+    state.posts[index].pv = pv
+    state.posts[index].nc = nc
     if (type) state.posts[index].type = type
+  },
+  SCROLLSET (state, scrollTop) {
+    state.scrollTop = scrollTop
   },
   SCROLLINIT (state) {
     state.scrollTop = 0

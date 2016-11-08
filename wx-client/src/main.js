@@ -31,12 +31,12 @@ router.map({
       require(['./views/forum/'], resolve)
     }
   },
-  '/forum/person/:pid': {
+  '/person/:pid': {
     component (resolve) {
       require(['./views/forum/person.vue'], resolve)
     }
   },
-  '/forum/person': {
+  '/person': {
     component (resolve) {
       require(['./views/forum/person.vue'], resolve)
     }
@@ -46,7 +46,7 @@ router.map({
       require(['./views/forum/publish.vue'], resolve)
     }
   },
-  '/forum/:pid': {
+  '/forum/detail/:pid': {
     component (resolve) {
       require(['./views/forum/detail.vue'], resolve)
     }

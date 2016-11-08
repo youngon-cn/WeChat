@@ -1,7 +1,7 @@
 import Vue from 'vue'
 
 // 分发获取用户信息的mutation
-export const getUser = store => {
+export const getUser = (store) => {
   Vue.http
     .get('/request/forum/user')
     .then((data) => {
@@ -50,16 +50,16 @@ export const toogleRefreshing = (store) => {
   store.dispatch('REFRESHING')
 }
 
-export const goToDetail = (store, index, scrollTop) => {
-  store.dispatch('FORUMSTATE', index, scrollTop)
+export const toogleLoading = (store) => {
+  store.dispatch('LOADING')
 }
 
-export const postsUpdate = (store, index, type) => {
-  store.dispatch('POSTSTATE', index, type)
+export const postUpdate = (store, index, pv, nc, type) => {
+  store.dispatch('POSTSTATE', index, pv, nc, type)
 }
 
-export const scrollInit = store => {
-  store.dispatch('SCROLLINIT')
+export const scrollSet = (store, scrollTop) => {
+  store.dispatch('SCROLLSET', scrollTop)
 }
 
 export const setPostsType = (store, type) => {

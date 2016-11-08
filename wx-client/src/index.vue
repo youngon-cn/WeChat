@@ -23,9 +23,9 @@ export default {
     }
   },
   watch: {
-    '$route' (to, from) {
-      const toDepth = to.path.split('/').length
-      const fromDepth = from.path.split('/').length
+    '$route': function (to, from) {
+      var toDepth = to.path.split('/').length
+      var fromDepth = from.path.split('/').length
       this.transitionName = toDepth < fromDepth ? 'slideIn' : 'slideOut'
     }
   },
@@ -38,6 +38,8 @@ export default {
             .then((data) => {
               if (data.body.state === 1) {
                 this.getUser()
+              } else {
+                this.$router.go('/forum')
               }
             }, (err) => {
               console.log(err)
@@ -97,7 +99,7 @@ img.youngon
 
 // animation
 .slideIn-transition, .slideOut-transition
-  transition all .5s ease
+  transition all .4s ease
 
 .slideIn-enter, .slideOut-leave
   transform translate(100%, 0)

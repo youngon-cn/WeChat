@@ -6,6 +6,10 @@ var userSchema = new mongoose.Schema({
   sex: Number,
   province: String,
   city: String,
+  favorites: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Post'
+  }],
   openid: {
     type: String,
     unique: true

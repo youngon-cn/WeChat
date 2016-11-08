@@ -1,9 +1,9 @@
 <template lang="pug">
 #person.vc-page
-  content(v-touch:swiperight="back()")
+  content(v-touch:swiperight="back()", v-touch:swipeleft="forward()", v-el:person)
     icon-button(icon="arrow_back", v-link="{path: '/forum'}")
-    .person-info
-      .person-bg
+    .person-info(:style="{ backgroundImage: 'url(' + user.headimgurl + ')' }")
+      .person-bg(:style="{ backgroundImage: 'url(' + user.headimgurl + ')' }")
       img.person-headImg(:src="user.headimgurl", v-show="user.nickname", transition="fade")
       .person-nickname(v-show="user.nickname", transition="fade")
         span {{user.nickname}}
@@ -17,7 +17,7 @@
       .vc-refresh-control(v-show="refreshing", transition="fade")
         circular(:size="20", :border-width="2")
       list(v-if="tabActive === 0")
-        item(v-for="post in postList.a", v-link="{path: '/forum/' + post._id + '?index=' + $index}", @click="goToDetail($index, $els.post_list.scrollTop)", track-by="_id", transition="bounce")
+        item(v-for="post in postList.a", v-link="{path: '/forum/detail/' + post._id + '?index=' + $index}", track-by="_id", transition="bounce")
           item-media.headImg
             p(v-if="post.type === 0") 未处理
             p(v-if="post.type === 1") 连载中
@@ -37,7 +37,7 @@
               item-title.sub-title 创建于：{{moment(post.postDate).format('YYYY-MM-DD HH:mm:ss')}}
               item-title-after {{moment(post.postDate).fromNow()}}
       list(v-if="tabActive === 1")
-        item(v-for="post in postList.b", v-link="{path: '/forum/' + post._id + '?index=' + $index}", @click="goToDetail($index, $els.post_list.scrollTop)", track-by="_id", transition="bounce")
+        item(v-for="post in postList.b", v-link="{path: '/forum/detail/' + post._id + '?index=' + $index}", track-by="_id", transition="bounce")
           item-media.headImg
             p(v-if="post.type === 0") 未处理
             p(v-if="post.type === 1") 连载中
@@ -57,7 +57,7 @@
               item-title.sub-title 创建于：{{moment(post.postDate).format('YYYY-MM-DD HH:mm:ss')}}
               item-title-after {{moment(post.postDate).fromNow()}}
       list(v-if="tabActive === 2")
-        item(v-for="post in postList.c", v-link="{path: '/forum/' + post._id + '?index=' + $index}", @click="goToDetail($index, $els.post_list.scrollTop)", track-by="_id", transition="bounce")
+        item(v-for="post in postList.c", v-link="{path: '/forum/detail/' + post._id + '?index=' + $index}", track-by="_id", transition="bounce")
           item-media.headImg
             p(v-if="post.type === 0") 未处理
             p(v-if="post.type === 1") 连载中
@@ -76,17 +76,19 @@
             item-title-row
               item-title.sub-title 创建于：{{moment(post.postDate).format('YYYY-MM-DD HH:mm:ss')}}
               item-title-after {{moment(post.postDate).fromNow()}}
+    infinite-scroll(@load="getNextPagePosts(postList.b[postList.b.length-1], tabActive)", :trigger="$els.person", :loading="loading")
 </template>
 
 <script>
-import { goToDetail } from '../../vuex/actions'
-import { user } from '../../vuex/getters'
+import { toogleRefreshing, toogleLoading } from '../../vuex/actions'
+import { user, refreshing, loading } from '../../vuex/getters'
 import moment from 'moment'
 moment.locale('zh-cn')
 
 export default {
   attached () {
-    this.getFirstPagePosts()
+    this.tabActive = 0
+    this.getFirstPagePosts(0)
   },
   data () {
     return {
@@ -102,17 +104,84 @@ export default {
     back () {
       window.history.go(-1)
     },
+    forward () {
+      window.history.go(1)
+    },
     tabBarClick (index) {
       this.tabActive = index
+      this.postList = {
+        a: [],
+        b: [],
+        c: []
+      }
+      this.getFirstPagePosts(index)
     },
-    getFirstPagePosts () {
-      this.$http
-        .get('/request/forum/posts/firstPage?type=9&poster=' + this.$route.params.pid || this.user._id)
-        .then((data) => {
-          this.postList.b = data.body
-        }, (err) => {
-          console.log(err)
-        })
+    getFirstPagePosts (type) {
+      if (type === 0) {
+        this.toogleRefreshing()
+        this.$http
+          .get('/request/forum/posts/reply/firstPage?commenter=' + this.$route.params.pid || this.user._id)
+          .then((data) => {
+            this.toogleRefreshing()
+            this.postList.a = data.body
+          }, (err) => {
+            this.toogleRefreshing()
+            console.log(err)
+          })
+      } else if (type === 1) {
+        this.toogleRefreshing()
+        this.$http
+          .get('/request/forum/posts/firstPage?type=9&poster=' + this.$route.params.pid || this.user._id)
+          .then((data) => {
+            this.toogleRefreshing()
+            this.postList.b = data.body
+          }, (err) => {
+            this.toogleRefreshing()
+            console.log(err)
+          })
+      } else if (type === 2) {
+        this.toogleRefreshing()
+        this.$http
+          .get('/request/forum/user/favorites')
+          .then((data) => {
+            this.toogleRefreshing()
+            if (data.body.state === 1) {
+              this.postList.c = data.body.favorites
+            }
+          }, (err) => {
+            this.toogleRefreshing()
+            console.log(err)
+          })
+      }
+    },
+    getNextPagePosts (post, type) {
+      if (type === 0) {
+        this.toogleLoading()
+        this.$http
+          .get('/request/forum/posts/reply/nextPage?updateDate=' + post.updateDate + '&commenter=' + this.$route.params.pid || this.user._id)
+          .then((data) => {
+            this.toogleLoading()
+            for (let post of data.body) {
+              this.postList.a.push(post)
+            }
+          }, (err) => {
+            this.toogleLoading()
+            console.log(err)
+          })
+      } else if (type === 1) {
+        this.toogleLoading()
+        this.$http
+          .get('/request/forum/posts/nextPage?updateDate=' + post.updateDate + '&type=9&poster=' + this.$route.params.pid || this.user._id)
+          .then((data) => {
+            this.toogleLoading()
+            for (let post of data.body) {
+              this.postList.b.push(post)
+            }
+          }, (err) => {
+            this.toogleLoading()
+            console.log(err)
+          })
+      }
     },
     freshInfo () {
       this.$http
@@ -131,10 +200,13 @@ export default {
   },
   vuex: {
     actions: {
-      goToDetail
+      toogleRefreshing,
+      toogleLoading
     },
     getters: {
-      user
+      user,
+      refreshing,
+      loading
     }
   }
 }
@@ -154,12 +226,10 @@ export default {
 .person-info
   position relative
   height 180px
-  background-image url('https://wx.qlogo.cn/mmopen/3U8ibtT2vYC9aJsRxpiccQpQ1PWf52kyoaT9xSlvcuvwZOdxMibadyYt5V6f82ZkH3an9De2ux8GzHxWlmE8ic3e0FW1fDdWNUwK/0')
 .person-bg
   width 100%
   height 100%
   filter blur(16px)
-  background-image url('https://wx.qlogo.cn/mmopen/3U8ibtT2vYC9aJsRxpiccQpQ1PWf52kyoaT9xSlvcuvwZOdxMibadyYt5V6f82ZkH3an9De2ux8GzHxWlmE8ic3e0FW1fDdWNUwK/0')
   background-size cover
   background-repeat no-repeat
   background-position center center

@@ -21,7 +21,9 @@
             span {{post.poster.nickname}}
             span(v-if="post.poster.type === 9")
               img.youngon(src="../../assets/youngon.png")
-          p {{moment(post.postDate).fromNow()}}创建·{{post.pv}}次浏览
+          p {{moment(post.postDate).fromNow()}}创建·{{post.pv}}次浏览·{{post.favoriters.length}}人收藏
+        .post-favor(v-show="user.favorites", transition="fade")
+          icon-button(color="red", :icon="favorite ? 'favorite' : 'favorite_border'", @click="favor()")
       p(v-if="post.content") {{post.content}}
       p(v-else) 无详情
       .plantform(v-if="post.plantform.length")
@@ -57,7 +59,7 @@
 </template>
 
 <script>
-import { toast, postsUpdate, toogleRefreshing } from '../../vuex/actions'
+import { toast, postUpdate, toogleRefreshing } from '../../vuex/actions'
 import { user, refreshing } from '../../vuex/getters'
 import moment from 'moment'
 moment.locale('zh-cn')
@@ -73,18 +75,21 @@ export default {
     this.post = {
       poster: {},
       comments: [],
-      plantform: []
+      plantform: [],
+      favoriters: []
     }
   },
   data () {
     return {
+      favorite: false,
       popup: {
         show: false
       },
       post: {
         poster: {},
         comments: [],
-        plantform: []
+        plantform: [],
+        favoriters: []
       },
       comment: '',
       to: {
@@ -100,6 +105,19 @@ export default {
   methods: {
     back () {
       window.history.go(-1)
+    },
+    favor () {
+      this.$http
+        .patch('/request/forum/post?postId=' + this.$route.params.pid + '&type=' + this.favorite)
+        .then((data) => {
+          if (data.body.state === 1) {
+            this.favorite = !this.favorite
+            this.favorite ? this.post.favoriters.push('') : this.post.favoriters.pop()
+            this.user.favorites = data.body.favorites
+          }
+        }, (err) => {
+          console.log(err)
+        })
     },
     tooglePopup (_id, nickname) {
       this.to = {
@@ -118,7 +136,15 @@ export default {
         .get('/request/forum/post?postId=' + this.$route.params.pid + '&type=' + type)
         .then((data) => {
           this.toogleRefreshing()
+          if (data.body.state === 0) {
+            data.body.err ? this.toast('访问出错，请稍后再试') : this.toast('该帖子已被删除')
+            setTimeout(() => {
+              this.$router.go('/forum')
+            }, 500)
+            return
+          }
           this.post = data.body
+          this.postUpdate(this.$route.query.index, this.post.pv, this.post.nc)
           this.actionSheet.actions = []
           if (type === 'init') {
             if (this.post.type === 0) {
@@ -153,6 +179,10 @@ export default {
           }
         }, (err) => {
           this.toogleRefreshing()
+          this.toast('访问出错，请稍后再试')
+          setTimeout(() => {
+            this.$router.go('/forum')
+          }, 500)
           console.log(err)
         })
     },
@@ -167,13 +197,10 @@ export default {
           to: this.to._id
         })
         .then((data) => {
-          if (data.body.turnUrl) {
-            return (window.location.href = data.body.turnUrl)
-          }
           if (data.body.state === 1) {
             this.toast('回复成功')
             this.getPost('fresh')
-            this.postsUpdate(this.$route.query.index)
+            this.postUpdate(this.$route.query.index, this.post.pv, this.post.nc)
             this.tooglePopup()
           }
         }, (err) => {
@@ -193,7 +220,7 @@ export default {
           if (data.body.state === 1) {
             this.toast('操作成功')
             this.getPost('fresh')
-            this.postsUpdate(this.$route.query.index, type)
+            this.postUpdate(this.$route.query.index, this.post.pv, this.post.nc, type)
           } else {
             this.toast('操作失败，请稍后重试')
           }
@@ -202,10 +229,19 @@ export default {
         })
     }
   },
+  watch: {
+    'user.favorites': function (favorites) {
+      if (this.user.favorites) {
+        for (let favorite of this.user.favorites) {
+          if (favorite === this.$route.params.pid) this.favorite = true
+        }
+      }
+    }
+  },
   vuex: {
     actions: {
       toast,
-      postsUpdate,
+      postUpdate,
       toogleRefreshing
     },
     getters: {
@@ -254,6 +290,10 @@ export default {
 .post-info p
   margin 0
   line-height 24px
+.post-favor
+  height 60px
+  line-height 60px
+  float right
 .plantform
   padding 4px 6px
   margin 6px 0

@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import { toast, getFirstPagePosts, scrollInit, setPostsType } from '../../vuex/actions'
+import { toast, getFirstPagePosts, scrollSet, setPostsType } from '../../vuex/actions'
 import { posts } from '../../vuex/getters'
 
 export default {
@@ -55,10 +55,12 @@ export default {
               this.plantform = []
               this.content = ''
               this.setPostsType(9)
-              this.getFirstPagePosts(9)
-              this.scrollInit()
+              this.scrollSet(0)
               window.history.go(-1)
             }, 500)
+            setTimeout(() => {
+              this.getFirstPagePosts(9)
+            }, 900)
           }
         }, (err) => {
           console.log(err)
@@ -69,7 +71,7 @@ export default {
     actions: {
       toast,
       getFirstPagePosts,
-      scrollInit,
+      scrollSet,
       setPostsType
     },
     getters: {

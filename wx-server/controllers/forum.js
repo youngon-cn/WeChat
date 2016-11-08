@@ -23,7 +23,7 @@ exports.wxoauth = function (req, res) {
           .exec((err, user) => {
             if (user) {
               user.nickname = result.nickname
-              user.headimgurl = result.headimgurl
+              user.headimgurl = result.headimgurl.replace(/http:/g, "")
               user.sex = result.sex
               user.province = result.province
               user.city = result.city
@@ -37,7 +37,7 @@ exports.wxoauth = function (req, res) {
                 .create({
                   openid: result.openid,
                   nickname: result.nickname,
-                  headimgurl: result.headimgurl,
+                  headimgurl: result.headimgurl.replace(/http:/g, ""),
                   sex: result.sex,
                   province: result.province,
                   city: result.city
@@ -60,6 +60,22 @@ exports.wxoauth = function (req, res) {
   }
 }
 
+exports.favorites = function (req, res) {
+  User
+    .findById(req.session.userId)
+    .select('favorites')
+    .populate({
+      path: 'favorites',
+      populate: {
+        select: 'nickname headimgurl type',
+        path: 'poster'
+      }
+    })
+    .exec((err, user) => {
+      res.json({ "state": 1, "favorites": user.favorites })
+    })
+}
+
 exports.info = function (req, res) {
   User
     .findById(req.session.userId)
@@ -69,10 +85,63 @@ exports.info = function (req, res) {
     })
 }
 
+exports.getFirstPageReplyPosts = function (req, res) {
+  var posts = []
+  Comment
+    .find({'commenter': req.query.commenter})
+    .exec((err, comments) => {
+      for (let comment of comments) {
+        posts.push(comment.belong)
+      }
+    })
+    .then(() => {
+      Post
+        .find({"_id": { "$in": posts }})
+        .select('-comments -content')
+        .sort({updateDate: -1, _id: -1})
+        .limit(10)
+        .populate({
+          select: 'nickname headimgurl type',
+          path: 'poster'
+        })
+        .exec((err, posts) => {
+          res.send(posts)
+        })
+    })
+}
+
+exports.getNextPageReplyPosts = function (req, res) {
+  var posts = []
+  Comment
+    .find({
+      'commenter': req.query.commenter,
+      'updateDate': { '$lt': req.query.updateDate}
+    })
+    .exec((err, comments) => {
+      for (let comment of comments) {
+        posts.push(comment.belong)
+      }
+    })
+    .then(() => {
+      Post
+        .find({"_id": { "$in": posts }})
+        .select('-comments -content')
+        .sort({updateDate: -1, _id: -1})
+        .limit(10)
+        .populate({
+          select: 'nickname headimgurl type',
+          path: 'poster'
+        })
+        .exec((err, posts) => {
+          res.send(posts)
+        })
+    })
+}
+
 exports.getFirstPagePosts = function (req, res) {
   var term = {}
-  if (req.query.type !== "9") term.type = req.query.type
   if (req.query.poster) term.poster = req.query.poster
+  if (req.query.type !== "9") term.type = req.query.type
   Post
     .find(term)
     .select('-comments -content')
@@ -129,11 +198,38 @@ exports.getPost = function (req, res) {
       }
     })
     .exec((err, post) => {
+      if (err || !post) return res.json({ "state": 0, "err": err })
       if (req.query.type === 'init') {
         post.pv++
         post.save()
       }
       res.send(post)
+    })
+    .catch(err => {
+      res.json({ "state": 0 })
+    })
+}
+
+exports.favorPost = function (req, res) {
+  var operate = {}
+  if (req.query.type === 'true') {
+    operate = {$pull: {"favorites": req.query.postId}}
+    Post
+      .update({'_id': req.query.postId}, {$pull: {"favoriters": req.session.userId}})
+      .exec()
+  } else {
+    operate = {$addToSet: {"favorites": req.query.postId}}
+    Post
+      .update({'_id': req.query.postId}, {$addToSet: {"favoriters": req.session.userId}})
+      .exec()
+  }
+  User
+    .findByIdAndUpdate(req.session.userId, operate, { new: true })
+    .exec((err, user) => {
+      res.json({ "state": 1, "favorites": user.favorites})
+    })
+    .catch((err) => {
+      res.json({ "state": 0 })
     })
 }
 
@@ -144,6 +240,9 @@ exports.delPost = function (req, res) {
       if (err) return res.json({ "state": 0, "err": err })
       Comment
         .remove({"_id": { "$in": post.comments }})
+        .exec()
+      User
+        .update({"_id": { "$in": post.favoriters }}, {$pull: {"favorites": post._id}})
         .exec()
       res.json({ "state": 1 })
     })

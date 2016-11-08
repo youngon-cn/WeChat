@@ -7,7 +7,7 @@
     .vc-refresh-control(v-show="refreshing", transition="fade")
       circular(:size="20", :border-width="2")
     list
-      item(v-link="{path: '/forum/' + post._id + '?index=' + $index}", v-for="post in posts", @click="goToDetail($index, $els.post_list.scrollTop)", track-by="_id", transition="bounce")
+      item(v-link="{path: '/forum/detail/' + post._id + '?index=' + $index}", v-for="post in posts", @click="scrollSet($els.post_list.scrollTop)", track-by="_id", transition="bounce")
         item-media.headImg
           p(v-if="post.type === 0") 未处理
           p(v-if="post.type === 1") 连载中
@@ -32,7 +32,7 @@
     float-button(v-show="user.nickname", transition="fade", style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="mode_edit", v-link="{path: '/forum/publish'}")
   overlay(v-if="navShow")
   nav-drawer(:overlay="false", :show.sync="navShow", v-touch:swipeleft="toogleNav('close')")
-    .nav-icon-logo(slot="header", v-link="{path: '/forum/person/' + user._id}")
+    .nav-icon-logo(slot="header", v-link="{path: '/person/' + user._id}")
       img(:src="user.headimgurl")
     .nav-title(slot="header") {{user.nickname}}
     nav-menu-header 分类
@@ -42,11 +42,12 @@
     nav-menu(@click="switchType(-1)", icon="sentiment_very_dissatisfied", title="禁止上传")
     nav-divider
     nav-menu(@click="about()", icon="info_outline", title="关于")
+    nav-menu(@click="out()", icon="exit_to_app", title="退出")
   confirm(:title="confirm.title", show-icon, @sure="handlerSure()", :show.sync="confirm.show", :msg="confirm.msg")
 </template>
 
 <script>
-import { getFirstPagePosts, getNextPagePosts, goToDetail, setPostsType, toast, alert } from '../../vuex/actions'
+import { getFirstPagePosts, getNextPagePosts, scrollSet, setPostsType, toast, alert } from '../../vuex/actions'
 import { user, refreshing, loading, posts, postsType, scrollTop } from '../../vuex/getters'
 import moment from 'moment'
 moment.locale('zh-cn')
@@ -68,6 +69,9 @@ export default {
     }
   },
   methods: {
+    out () {
+      window.WeixinJSBridge.call('closeWindow')
+    },
     forward () {
       window.history.go(1)
     },
@@ -126,7 +130,7 @@ export default {
     actions: {
       getFirstPagePosts,
       getNextPagePosts,
-      goToDetail,
+      scrollSet,
       setPostsType,
       toast,
       alert
