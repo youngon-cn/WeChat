@@ -78,6 +78,7 @@ export default {
       plantform: [],
       favoriters: []
     }
+    this.favorite = false
   },
   data () {
     return {
@@ -111,8 +112,11 @@ export default {
         .patch('/request/forum/post?postId=' + this.$route.params.pid + '&type=' + this.favorite)
         .then((data) => {
           if (data.body.state === 1) {
+            // 切换收藏状态
             this.favorite = !this.favorite
+            // 修正收藏人数
             this.favorite ? this.post.favoriters.push('') : this.post.favoriters.pop()
+            // 更新当前用户收藏列表
             this.user.favorites = data.body.favorites
           }
         }, (err) => {
@@ -144,6 +148,11 @@ export default {
             return
           }
           this.post = data.body
+          if (this.user.favorites) {
+            for (let favorite of this.user.favorites) {
+              if (favorite === this.$route.params.pid) this.favorite = true
+            }
+          }
           this.postUpdate(this.$route.query.index, this.post.pv, this.post.nc)
           this.actionSheet.actions = []
           if (type === 'init') {
@@ -169,6 +178,12 @@ export default {
               })
             }
             if (this.post.type === 1) {
+              this.actionSheet.actions.push({
+                name: '标记已更新',
+                click: () => {
+                  this.operate(1.2)
+                }
+              })
               this.actionSheet.actions.push({
                 name: '标记连载完毕',
                 click: () => {
@@ -220,7 +235,7 @@ export default {
           if (data.body.state === 1) {
             this.toast('操作成功')
             this.getPost('fresh')
-            this.postUpdate(this.$route.query.index, this.post.pv, this.post.nc, type)
+            this.postUpdate(this.$route.query.index, this.post.pv, this.post.nc, parseInt(type))
           } else {
             this.toast('操作失败，请稍后重试')
           }
@@ -231,10 +246,8 @@ export default {
   },
   watch: {
     'user.favorites': function (favorites) {
-      if (this.user.favorites) {
-        for (let favorite of this.user.favorites) {
-          if (favorite === this.$route.params.pid) this.favorite = true
-        }
+      for (let favorite of favorites) {
+        if (favorite === this.$route.params.pid) this.favorite = true
       }
     }
   },

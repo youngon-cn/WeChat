@@ -11,52 +11,58 @@ var api = new WechatAPI(wx.appid, wx.appsecret)
 var tc = require('text-censor')
 
 exports.wxoauth = function (req, res) {
-  if (req.query.type === 'fresh') {
-    res.json({"turnUrl" : "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxcf692473c3e08053&redirect_uri=" + req.headers.referer + "&response_type=code&scope=snsapi_userinfo&state=wxoauth#wechat_redirect"})
-  } else {
-    client.getUserByCode(req.query.code, (err, result) => {
-      if (err) {
-        return res.send(err)
-      } else if (result.openid) {
+  function upsert_user (result) {
+    User
+      .findOne({ openid: result.openid })
+      .exec((err, user) => {
+        if (user) {
+          user.nickname = result.nickname
+          user.remark = result.remark
+          user.headimgurl = result.headimgurl.replace(/http:/g, "")
+          user.sex = result.sex
+          user.province = result.province
+          user.city = result.city
+          user.save()
+          req.session.userId = user._id
+          req.session.openid = user.openid
+          req.session.type = user.type
+          return res.json({ "state": 1 })
+        }
         User
-          .findOne({ openid: result.openid })
-          .exec((err, user) => {
-            if (user) {
-              user.nickname = result.nickname
-              user.headimgurl = result.headimgurl.replace(/http:/g, "")
-              user.sex = result.sex
-              user.province = result.province
-              user.city = result.city
-              user.save()
-              req.session.userId = user._id
-              req.session.openid = user.openid
-              req.session.type = user.type
-              res.json({ "state": 1 })
-            } else {
-              User
-                .create({
-                  openid: result.openid,
-                  nickname: result.nickname,
-                  headimgurl: result.headimgurl.replace(/http:/g, ""),
-                  sex: result.sex,
-                  province: result.province,
-                  city: result.city
-                })
-                .then((user) => {
-                  req.session.userId = user._id
-                  req.session.openid = user.openid
-                  req.session.type = user.type
-                  res.json({ "state": 1 })
-                })
-                .catch(err => {
-                  res.json({ "state": 0, "err": err })
-                })
-            }
+          .create({
+            openid: result.openid,
+            nickname: result.nickname,
+            remark: result.remark,
+            headimgurl: result.headimgurl.replace(/http:/g, ""),
+            sex: result.sex,
+            province: result.province,
+            city: result.city
           })
-      } else {
-        res.json({ "state": 0, "result": result })
-      }
+          .then((user) => {
+            req.session.userId = user._id
+            req.session.openid = user.openid
+            req.session.type = user.type
+            res.json({ "state": 1 })
+          })
+          .catch(err => {
+            res.json({ "state": 0, "err": err })
+          })
+      })
+  }
+  if (req.query.type === 'fresh' || req.session.openid) {
+    api.getUser({openid: req.session.openid, lang: 'zh_CN'}, (err, result) => {
+      upsert_user(result)
+      return
     })
+  } else if (req.query.code) {
+    client.getAccessToken(req.query.code, (err, result) => {
+      if (err || !result.data.openid) return res.json({ "state": 0 })
+      api.getUser({openid: result.data.openid, lang: 'zh_CN'}, (err, result) => {
+        upsert_user(result)
+      })
+    })
+  } else {
+    res.json({ "state": 0 })
   }
 }
 
@@ -272,6 +278,9 @@ exports.postOperate = function (req, res) {
   if (req.body.type === 1) {
     detail.content += '连载中'
   }
+  if (req.body.type === 1.2) {
+    detail.content += '已更新'
+  }
   if (req.body.type === 2) {
     detail.content += '已上传'
   }
@@ -285,7 +294,7 @@ exports.postOperate = function (req, res) {
         .findById(req.body.postId)
         .exec((err, post) => {
           post.comments.push(comment._id)
-          post.type = req.body.type
+          post.type = parseInt(req.body.type)
           post.updateDate = Date.now()
           post.nc++
           post.save()

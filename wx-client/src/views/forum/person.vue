@@ -80,7 +80,7 @@
 </template>
 
 <script>
-import { toogleRefreshing, toogleLoading } from '../../vuex/actions'
+import { getUser, toogleRefreshing, toogleLoading, toast } from '../../vuex/actions'
 import { user, refreshing, loading } from '../../vuex/getters'
 import moment from 'moment'
 moment.locale('zh-cn')
@@ -187,10 +187,12 @@ export default {
       this.$http
         .get('/request/forum/wxoauth?type=fresh')
         .then((data) => {
-          if (data.body.turnUrl) {
-            return (window.location.href = data.body.turnUrl)
+          if (data.body.state === 1) {
+            this.getUser()
+            this.toast('数据更新成功')
           }
         }, (err) => {
+          this.toast('数据更新失败，请稍后再试')
           console.log(err)
         })
     },
@@ -200,8 +202,10 @@ export default {
   },
   vuex: {
     actions: {
+      getUser,
       toogleRefreshing,
-      toogleLoading
+      toogleLoading,
+      toast
     },
     getters: {
       user,
