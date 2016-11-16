@@ -155,42 +155,40 @@ export default {
           }
           this.postUpdate(this.$route.query.index, this.post.pv, this.post.nc)
           this.actionSheet.actions = []
-          if (type === 'init') {
-            if (this.post.type === 0) {
-              this.actionSheet.actions.push({
-                name: '标记连载中',
-                click: () => {
-                  this.operate(1)
-                }
-              })
-              this.actionSheet.actions.push({
-                name: '标记已上传',
-                click: () => {
-                  this.operate(2)
-                }
-              })
-              this.actionSheet.actions.push({
-                color: 'red',
-                name: '标记禁止上传',
-                click: () => {
-                  this.operate(-1)
-                }
-              })
-            }
-            if (this.post.type === 1) {
-              this.actionSheet.actions.push({
-                name: '标记已更新',
-                click: () => {
-                  this.operate(1.2)
-                }
-              })
-              this.actionSheet.actions.push({
-                name: '标记连载完毕',
-                click: () => {
-                  this.operate(2)
-                }
-              })
-            }
+          if (this.post.type === 0) {
+            this.actionSheet.actions.push({
+              name: '标记连载中',
+              click: () => {
+                this.operate(1)
+              }
+            })
+            this.actionSheet.actions.push({
+              name: '标记已上传',
+              click: () => {
+                this.operate(2)
+              }
+            })
+            this.actionSheet.actions.push({
+              color: 'red',
+              name: '标记禁止上传',
+              click: () => {
+                this.operate(-1)
+              }
+            })
+          }
+          if (this.post.type === 1) {
+            this.actionSheet.actions.push({
+              name: '标记已更新',
+              click: () => {
+                this.operate(1.2)
+              }
+            })
+            this.actionSheet.actions.push({
+              name: '标记连载完毕',
+              click: () => {
+                this.operate(2)
+              }
+            })
           }
         }, (err) => {
           this.toogleRefreshing()

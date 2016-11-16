@@ -7,7 +7,6 @@
 /wx-client/test/e2e/reports
 
 /wx-server/npm-debug.log
-/wx-server/keywords
 /wx-server/node_modules/
 /wx-server/public/
 /wx-server/controllers/key/

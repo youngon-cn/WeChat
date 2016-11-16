@@ -14,7 +14,7 @@ exports.wxoauth = function (req, res) {
   function upsert_user (result) {
     User
       .findOne({ openid: result.openid })
-      .exec((err, user) => {
+      .then(user => {
         if (user) {
           user.nickname = result.nickname
           user.remark = result.remark
@@ -26,7 +26,7 @@ exports.wxoauth = function (req, res) {
           req.session.userId = user._id
           req.session.openid = user.openid
           req.session.type = user.type
-          return res.json({ "state": 1 })
+          res.json({ "state": 1 })
         }
         User
           .create({
@@ -77,8 +77,11 @@ exports.favorites = function (req, res) {
         path: 'poster'
       }
     })
-    .exec((err, user) => {
+    .then(user => {
       res.json({ "state": 1, "favorites": user.favorites })
+    })
+    .catch(err => {
+      res.json({ "state": 0, "err": err })
     })
 }
 
@@ -86,23 +89,26 @@ exports.info = function (req, res) {
   User
     .findById(req.session.userId)
     .select('-openid')
-    .exec((err, user) => {
-      user ? res.send(user) : res.status(404)
+    .then(user => {
+      res.send(user)
+    })
+    .catch(err => {
+      res.json({ "state": 0, "err": err })
     })
 }
 
 exports.getFirstPageReplyPosts = function (req, res) {
-  var posts = []
   Comment
     .find({'commenter': req.query.commenter})
-    .exec((err, comments) => {
+    .then(comments => {
+      var posts = []
       for (let comment of comments) {
         posts.push(comment.belong)
       }
+      return posts
     })
-    .then(() => {
-      Post
-        .find({"_id": { "$in": posts }})
+    .then(posts => {
+      return Post.find({"_id": { "$in": posts }})
         .select('-comments -content')
         .sort({updateDate: -1, _id: -1})
         .limit(10)
@@ -110,27 +116,30 @@ exports.getFirstPageReplyPosts = function (req, res) {
           select: 'nickname headimgurl type',
           path: 'poster'
         })
-        .exec((err, posts) => {
-          res.send(posts)
-        })
+    })
+    .then(posts => {
+      res.send(posts)
+    })
+    .catch(err => {
+      res.json({ "state": 0, "err": err })
     })
 }
 
 exports.getNextPageReplyPosts = function (req, res) {
-  var posts = []
   Comment
     .find({
       'commenter': req.query.commenter,
       'updateDate': { '$lt': req.query.updateDate}
     })
-    .exec((err, comments) => {
+    .then(comments => {
+      var posts = []
       for (let comment of comments) {
         posts.push(comment.belong)
       }
+      return posts
     })
-    .then(() => {
-      Post
-        .find({"_id": { "$in": posts }})
+    .then(posts => {
+      return Post.find({"_id": { "$in": posts }})
         .select('-comments -content')
         .sort({updateDate: -1, _id: -1})
         .limit(10)
@@ -138,9 +147,12 @@ exports.getNextPageReplyPosts = function (req, res) {
           select: 'nickname headimgurl type',
           path: 'poster'
         })
-        .exec((err, posts) => {
-          res.send(posts)
-        })
+    })
+    .then(posts => {
+      res.send(posts)
+    })
+    .catch(err => {
+      res.json({ "state": 0, "err": err })
     })
 }
 
@@ -157,8 +169,11 @@ exports.getFirstPagePosts = function (req, res) {
       select: 'nickname headimgurl type',
       path: 'poster'
     })
-    .exec((err, posts) => {
+    .then(posts => {
       res.send(posts)
+    })
+    .catch(err => {
+      res.json({ "state": 0, "err": err })
     })
 }
 
@@ -184,8 +199,11 @@ exports.getNextPagePosts = function (req, res) {
       select: 'nickname headimgurl type',
       path: 'poster'
     })
-    .exec((err, posts) => {
+    .then(posts => {
       res.send(posts)
+    })
+    .catch(err => {
+      res.json({ "state": 0, "err": err })
     })
 }
 
@@ -203,8 +221,7 @@ exports.getPost = function (req, res) {
         path: 'commenter to'
       }
     })
-    .exec((err, post) => {
-      if (err || !post) return res.json({ "state": 0, "err": err })
+    .then(post => {
       if (req.query.type === 'init') {
         post.pv++
         post.save()
@@ -212,7 +229,7 @@ exports.getPost = function (req, res) {
       res.send(post)
     })
     .catch(err => {
-      res.json({ "state": 0 })
+      res.json({ "state": 0, "err": err })
     })
 }
 
@@ -231,7 +248,7 @@ exports.favorPost = function (req, res) {
   }
   User
     .findByIdAndUpdate(req.session.userId, operate, { new: true })
-    .exec((err, user) => {
+    .then(user => {
       res.json({ "state": 1, "favorites": user.favorites})
     })
     .catch((err) => {
@@ -242,8 +259,7 @@ exports.favorPost = function (req, res) {
 exports.delPost = function (req, res) {
   Post
     .findByIdAndRemove(req.query.postId)
-    .exec((err, post) => {
-      if (err) return res.json({ "state": 0, "err": err })
+    .then(post => {
       Comment
         .remove({"_id": { "$in": post.comments }})
         .exec()
@@ -251,6 +267,9 @@ exports.delPost = function (req, res) {
         .update({"_id": { "$in": post.favoriters }}, {$pull: {"favorites": post._id}})
         .exec()
       res.json({ "state": 1 })
+    })
+    .catch(err => {
+      res.json({ "state": 0, "err": err })
     })
 }
 
@@ -264,6 +283,15 @@ exports.insertPost = function (req, res) {
     })
     .then(() => {
       res.json({ "state": 1 })
+    })
+    .catch(err => {
+      res.json({ "state": 0, "err": err })
+    })
+  User
+    .find({type: 9})
+    .then(user => {
+      var index = parseInt(Math.random() * user.length, 10)
+      api.sendText(user[index].openid, 'VOD论坛里有人发帖，请查阅后处理')
     })
     .catch(err => {
       res.json({ "state": 0, "err": err })
@@ -289,22 +317,24 @@ exports.postOperate = function (req, res) {
   }
   Comment
     .create(detail)
-    .then((comment) => {
-      Post
+    .then(comment => {
+      return Post
         .findById(req.body.postId)
-        .exec((err, post) => {
+        .then(post => {
           post.comments.push(comment._id)
           post.type = parseInt(req.body.type)
           post.updateDate = Date.now()
           post.nc++
           post.save()
-          // User
-          //   .findById(post.poster)
-          //   .exec((err, user) => {
-          //     api.sendText(user.openid, 'VOD论坛里有人处理了你的请求')
-          //   })
-          res.json({ "state": 1 })
+          return post.poster
         })
+    })
+    .then(poster => {
+      return User.findById(poster)
+    })
+    .then(user => {
+      api.sendText(user.openid, 'VOD论坛里有人处理了你的请求')
+      res.json({ "state": 1 })
     })
     .catch(err => {
       res.json({ "state": 0, "err": err })
@@ -313,32 +343,35 @@ exports.postOperate = function (req, res) {
 
 exports.insertComment = function (req, res) {
   var detail = {
-      content: tc.filter(req.body.content),
-      commenter: req.session.userId,
-      belong: req.body.postId
-    }
+    content: tc.filter(req.body.content),
+    commenter: req.session.userId,
+    belong: req.body.postId
+  }
   if (req.body.to) {
     detail.to = req.body.to
   }
   Comment
     .create(detail)
-    .then((comment) => {
-      Post
+    .then(comment => {
+      return Post
         .findById(req.body.postId)
-        .exec((err, post) => {
+        .then(post => {
           post.comments.push(comment._id)
           post.updateDate = Date.now()
           post.nc++
           post.save()
-          // User
-          //   .findById(post.poster)
-          //   .exec((err, user) => {
-          //     api.sendText(user.openid, 'VOD论坛里有人回复了你')
-          //   })
-          res.json({ "state": 1 })
+          return post.poster
         })
+    })
+    .then(poster => {
+      return User.findById(poster)
+    })
+    .then(user => {
+      api.sendText(user.openid, 'VOD论坛里有人回复了你')
+      res.json({ "state": 1 })
     })
     .catch(err => {
       res.json({ "state": 0, "err": err })
+      console.log(err)
     })
 }

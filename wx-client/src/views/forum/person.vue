@@ -87,8 +87,7 @@ moment.locale('zh-cn')
 
 export default {
   attached () {
-    this.tabActive = 0
-    this.getFirstPagePosts(0)
+    this.getFirstPagePosts(this.tabActive)
   },
   data () {
     return {

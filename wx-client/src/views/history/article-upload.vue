@@ -45,13 +45,13 @@ export default {
       material: {},
       types: [
         {
-          label: '技术贴',
+          label: 'get技能',
           value: 'a'
         }, {
-          label: '天商指南',
+          label: '贴心指南',
           value: 'b'
         }, {
-          label: '使用链接',
+          label: '活动中心',
           value: 'c'
         }
       ],

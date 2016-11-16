@@ -26,6 +26,11 @@ const router = new VueRouter({
 })
 
 router.map({
+  '/': {
+    component (resolve) {
+      require(['./views/'], resolve)
+    }
+  },
   '/forum': {
     component (resolve) {
       require(['./views/forum/'], resolve)
@@ -79,7 +84,7 @@ router.map({
 })
 
 router.redirect({
-  '*': '/forum'
+  '*': '/'
 })
 
 router.start(App, 'body')
