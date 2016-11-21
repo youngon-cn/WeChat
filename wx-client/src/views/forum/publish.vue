@@ -3,7 +3,7 @@
   header-bar
     icon-button(slot="left", v-link="{path: '/forum'}", icon="arrow_back")
     span 发布帖子
-  content(v-touch:swiperight="back()")
+  scroll-view(v-touch:swiperight="back()")
     form-list
       text-field(label-float, label="帖子标题", icon="title", :value.sync="title")
       text-field(label-float, label="帖子内容（可留空）", icon="subject", type="textarea", :rows="4", :value.sync="content")
@@ -18,8 +18,8 @@
 </template>
 
 <script>
-import { toast, getFirstPagePosts, scrollSet, setPostsType } from '../../vuex/actions'
-import { posts } from '../../vuex/getters'
+import { toast, getFirstPagePosts, scrollSet, setPostsType } from 'vx/actions'
+import { posts } from 'vx/getters'
 
 export default {
   data () {

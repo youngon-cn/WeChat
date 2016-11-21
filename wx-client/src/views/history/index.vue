@@ -1,10 +1,10 @@
 <template lang="pug">
 #history
   slider(:pages="bannerList",:sliderinit="sliderinit")
-  tab-bar(:active="tabActive")
-    tab-bar-item(@tabbar-click="tabBarClick") get技能
-    tab-bar-item(@tabbar-click="tabBarClick") 贴心指南
-    tab-bar-item(@tabbar-click="tabBarClick") 活动中心
+  tab-bar(:active="tabActive", @tab-change="tabBarClick")
+    tab-bar-item get技能
+    tab-bar-item 贴心指南
+    tab-bar-item 活动中心
   .vc-refresh-control(v-show="refreshing", transition="fade")
     circular(:size="20", :border-width="2")
   list(v-if="tabActive === 0")
@@ -41,9 +41,9 @@
 </template>
 
 <script>
-import slider from '../../components/history/slider'
-import { toogleRefreshing } from '../../vuex/actions'
-import { user, refreshing } from '../../vuex/getters'
+import slider from 'components/history/slider'
+import { toogleRefreshing } from 'vx/actions'
+import { user, refreshing } from 'vx/getters'
 
 export default {
   attached () {

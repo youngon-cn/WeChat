@@ -12,6 +12,10 @@ var postSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }],
+  charger: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
   postDate: {
     type: Date,
     default: Date.now

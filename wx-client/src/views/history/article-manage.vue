@@ -12,9 +12,9 @@ admin-menu
 </template>
 
 <script>
-import { toast, toogleRefreshing } from '../../vuex/actions'
-import { user } from '../../vuex/getters'
-import adminMenu from '../../components/history/admin-menu'
+import { toast, toogleRefreshing } from 'vx/actions'
+import { user } from 'vx/getters'
+import adminMenu from 'components/history/admin-menu'
 
 export default {
   components: {

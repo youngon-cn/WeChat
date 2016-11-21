@@ -1,9 +1,9 @@
 <template lang="pug">
 #detail.vc-page
   header-bar
-    icon-button(slot="left", v-link="{path: '/forum'}", icon="arrow_back")
+    icon-button(slot="left", @click="back()", icon="arrow_back")
     span 帖子详情
-  content(v-el:post_detail, v-touch:swiperight="back()")
+  scroll-view(v-el:post_detail, v-touch:swiperight="back()")
     .vc-refresh-control(v-show="refreshing", transition="fade")
       circular(:size="20", :border-width="2")
     .post(v-show="post.title", transition="fade")
@@ -59,8 +59,8 @@
 </template>
 
 <script>
-import { toast, postUpdate, toogleRefreshing } from '../../vuex/actions'
-import { user, refreshing } from '../../vuex/getters'
+import { toast, postUpdate, toogleRefreshing } from 'vx/actions'
+import { user, refreshing } from 'vx/getters'
 import moment from 'moment'
 moment.locale('zh-cn')
 

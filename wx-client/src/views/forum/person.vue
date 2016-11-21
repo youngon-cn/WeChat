@@ -1,6 +1,6 @@
 <template lang="pug">
 #person.vc-page
-  content(v-touch:swiperight="back()", v-touch:swipeleft="forward()", v-el:person)
+  scroll-view(v-touch:swiperight="back()", v-touch:swipeleft="forward()", v-el:person)
     icon-button(icon="arrow_back", v-link="{path: '/forum'}")
     .person-info(:style="{ backgroundImage: 'url(' + user.headimgurl + ')' }")
       .person-bg(:style="{ backgroundImage: 'url(' + user.headimgurl + ')' }")
@@ -10,10 +10,10 @@
         span.person-info-fresh
           icon(value="refresh", :size="20", @click="freshInfo()")
     .person-posts
-      tab-bar(:active="tabActive")
-        tab-bar-item(@tabbar-click="tabBarClick") 最近回复
-        tab-bar-item(@tabbar-click="tabBarClick") 最新发布
-        tab-bar-item(@tabbar-click="tabBarClick") 我的收藏
+      tab-bar(:active="tabActive", @tab-change="tabBarClick")
+        tab-bar-item 最近回复
+        tab-bar-item 最新发布
+        tab-bar-item 我的收藏
       .vc-refresh-control(v-show="refreshing", transition="fade")
         circular(:size="20", :border-width="2")
       list(v-if="tabActive === 0")
@@ -80,8 +80,8 @@
 </template>
 
 <script>
-import { getUser, toogleRefreshing, toogleLoading, toast } from '../../vuex/actions'
-import { user, refreshing, loading } from '../../vuex/getters'
+import { getUser, toogleRefreshing, toogleLoading, toast } from 'vx/actions'
+import { user, refreshing, loading } from 'vx/getters'
 import moment from 'moment'
 moment.locale('zh-cn')
 

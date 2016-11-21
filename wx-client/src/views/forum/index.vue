@@ -3,7 +3,8 @@
   header-bar
     icon-button(slot="left", icon="menu", @click="toogleNav()")
     span VOD反馈专区
-  content(v-el:post_list, v-touch:swiperight="toogleNav('open')", v-touch:swipeleft="forward()")
+    icon-button(slot="right", icon="refresh", @click="getFirstPagePosts(postsType)")
+  scroll-view(v-el:post_list, v-touch:swiperight="toogleNav('open')", v-touch:swipeleft="forward()")
     .vc-refresh-control(v-show="refreshing", transition="fade")
       circular(:size="20", :border-width="2")
     list
@@ -47,8 +48,8 @@
 </template>
 
 <script>
-import { getFirstPagePosts, getNextPagePosts, scrollSet, setPostsType, toast, alert } from '../../vuex/actions'
-import { user, refreshing, loading, posts, postsType, scrollTop } from '../../vuex/getters'
+import { getFirstPagePosts, getNextPagePosts, scrollSet, setPostsType, toast, alert } from 'vx/actions'
+import { user, refreshing, loading, posts, postsType, scrollTop } from 'vx/getters'
 import moment from 'moment'
 moment.locale('zh-cn')
 

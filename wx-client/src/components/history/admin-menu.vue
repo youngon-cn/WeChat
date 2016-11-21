@@ -4,7 +4,7 @@
     header-bar
       icon-button(slot="left", icon="menu", @click="toogleNav()")
       slot(name="header")
-    content
+    scroll-view
       .vc-refresh-control(v-show="refreshing", transition="fade")
         circular(:size="20", :border-width="2")
       slot(name="content")
@@ -23,8 +23,8 @@
 </template>
 
 <script>
-import { toast } from '../../vuex/actions'
-import { user, refreshing } from '../../vuex/getters'
+import { toast } from 'vx/actions'
+import { user, refreshing } from 'vx/getters'
 
 export default {
   data () {

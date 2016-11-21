@@ -4,7 +4,7 @@ import VueResource from 'vue-resource'
 import VueTouch from 'vue-touch'
 import VueCarbon from 'vue-carbon'
 import 'vue-carbon/dist/vue-carbon.css'
-import store from './vuex/store'
+import store from 'vx/store'
 import app from './index'
 
 VueTouch.config.swipe = {

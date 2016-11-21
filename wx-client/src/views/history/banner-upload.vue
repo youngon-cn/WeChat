@@ -10,10 +10,10 @@ admin-menu
 </template>
 
 <script>
-import { toast } from '../../vuex/actions'
-import { user } from '../../vuex/getters'
-import imgUpload from '../../components/history/img-upload'
-import adminMenu from '../../components/history/admin-menu'
+import { toast } from 'vx/actions'
+import { user } from 'vx/getters'
+import imgUpload from 'components/history/img-upload'
+import adminMenu from 'components/history/admin-menu'
 
 export default {
   components: {

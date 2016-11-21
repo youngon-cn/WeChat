@@ -5,8 +5,8 @@ alert(:title="alert.title", :type="alert.type", :show.sync="alert.show", :msg="a
 </template>
 
 <script>
-import { getUser } from './vuex/actions'
-import { toasts, alert } from './vuex/getters'
+import { getUser } from 'vx/actions'
+import { toasts, alert } from 'vx/getters'
 
 export default {
   ready () {

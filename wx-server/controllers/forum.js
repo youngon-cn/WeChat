@@ -27,6 +27,7 @@ exports.wxoauth = function (req, res) {
           req.session.openid = user.openid
           req.session.type = user.type
           res.json({ "state": 1 })
+          return
         }
         User
           .create({
@@ -51,13 +52,13 @@ exports.wxoauth = function (req, res) {
   }
   if (req.query.type === 'fresh' || req.session.openid) {
     api.getUser({openid: req.session.openid, lang: 'zh_CN'}, (err, result) => {
+      if (err || !result.openid) return res.json({ "state": 0 })
       upsert_user(result)
-      return
     })
   } else if (req.query.code) {
     client.getAccessToken(req.query.code, (err, result) => {
       if (err || !result.data.openid) return res.json({ "state": 0 })
-      api.getUser({openid: result.data.openid, lang: 'zh_CN'}, (err, result) => {
+      client.getUser({openid: result.data.openid, lang: 'zh_CN'}, (err, result) => {
         upsert_user(result)
       })
     })
@@ -274,24 +275,27 @@ exports.delPost = function (req, res) {
 }
 
 exports.insertPost = function (req, res) {
-  Post
-    .create({
-      title: tc.filter(req.body.title),
-      content: tc.filter(req.body.content),
-      plantform: req.body.plantform,
-      poster: req.session.userId
-    })
-    .then(() => {
-      res.json({ "state": 1 })
-    })
-    .catch(err => {
-      res.json({ "state": 0, "err": err })
-    })
   User
     .find({type: 9})
     .then(user => {
       var index = parseInt(Math.random() * user.length, 10)
-      api.sendText(user[index].openid, 'VOD论坛里有人发帖，请查阅后处理')
+      api.sendText(user[index].openid, '[VOD论坛]有人发帖，请查阅后处理', (err, result) => {
+        console.log(result)
+      })
+      return user[index]._id
+    })
+    .then(chargerId => {
+      return Post
+        .create({
+          title: req.session.type > 8 ? req.body.title : tc.filter(req.body.title),
+          content: tc.filter(req.body.content),
+          plantform: req.body.plantform,
+          poster: req.session.userId,
+          charger: chargerId
+        })
+    })
+    .then(() => {
+      res.json({ "state": 1 })
     })
     .catch(err => {
       res.json({ "state": 0, "err": err })
@@ -333,8 +337,27 @@ exports.postOperate = function (req, res) {
       return User.findById(poster)
     })
     .then(user => {
-      api.sendText(user.openid, 'VOD论坛里有人处理了你的请求')
-      res.json({ "state": 1 })
+      api.sendText(user.openid, '[VOD论坛]有人处理了你的请求', (err, result) => {
+        res.json({ "state": 1, "notice": result })
+      })
+      return user.openid
+    })
+    .then((openid) => {
+      // 通知关注帖子的人
+      Post
+        .findById(req.body.postId)
+        .then(post => {
+            return User.find({'_id': { $in: post.favoriters }})
+        })
+        .then(favoriters => {
+          for (favoriter of favoriters) {
+            if (favoriter.openid = openid) continue
+            api.sendText(favoriter.openid, '[VOD论坛]有人处理了你收藏的帖子', (err, result) => {
+              if (err) return err
+              return result
+            })
+          }
+        })
     })
     .catch(err => {
       res.json({ "state": 0, "err": err })
@@ -343,7 +366,7 @@ exports.postOperate = function (req, res) {
 
 exports.insertComment = function (req, res) {
   var detail = {
-    content: tc.filter(req.body.content),
+    content: req.session.type > 8 ? req.body.content : tc.filter(req.body.content),
     commenter: req.session.userId,
     belong: req.body.postId
   }
@@ -367,8 +390,9 @@ exports.insertComment = function (req, res) {
       return User.findById(poster)
     })
     .then(user => {
-      api.sendText(user.openid, 'VOD论坛里有人回复了你')
-      res.json({ "state": 1 })
+      api.sendText(user.openid, '[VOD论坛]有人回复了你', (err, result) => {
+        res.json({ "state": 1, "notice": result })
+      })
     })
     .catch(err => {
       res.json({ "state": 0, "err": err })
