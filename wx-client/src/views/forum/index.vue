@@ -7,10 +7,10 @@
   scroll-view(v-el:post_list, v-touch:swiperight="toogleNav('open')", v-touch:swipeleft="forward()")
     .vc-refresh-control(v-show="refreshing", transition="fade")
       circular(:size="20", :border-width="2")
-    list
+    list(@touchmove="scroll = $els.post_list.scrollTop")
       item(v-link="{path: '/forum/detail/' + post._id + '?index=' + $index}", v-for="post in posts", @click="scrollSet($els.post_list.scrollTop)", track-by="_id", transition="bounce")
         item-media.headImg
-          p(v-if="post.type === 0") 未处理
+          p(v-if="post.type === 0", style="background-color: #ff7272; color: #fff") 待处理
           p(v-if="post.type === 1") 连载中
           p(v-if="post.type === 2") 已上传
           p(v-if="post.type === -1", style="margin: 7px 0") 禁止上传
@@ -19,6 +19,7 @@
           item-title-row
             item-title {{post.title}}
             item-title-after(v-if="user.type === 9")
+              img(:src="post.charger.headimgurl")
               icon(value="delete_forever", :size="20", @click.prevent.stop="delPost(post._id, $index)")
           item-title-row
             item-title.sub-title
@@ -30,16 +31,16 @@
             item-title.sub-title 创建于：{{moment(post.postDate).format('YYYY-MM-DD HH:mm:ss')}}
             item-title-after {{moment(post.postDate).fromNow()}}
     infinite-scroll(@load="getNextPagePosts(posts[posts.length-1], postsType)", :trigger="$els.post_list", :loading="loading")
-    float-button(v-show="user.nickname", transition="fade", style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="mode_edit", v-link="{path: '/forum/publish'}")
-  overlay(v-if="navShow")
+    float-button(v-show="user.nickname && buttonShow", transition="fade", style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="mode_edit", v-link="{path: '/forum/publish'}")
+  overlay(v-show="navShow")
   nav-drawer(:overlay="false", :show.sync="navShow", v-touch:swipeleft="toogleNav('close')")
     .nav-icon-logo(slot="header", v-link="{path: '/person/' + user._id}")
       img(:src="user.headimgurl")
     .nav-title(slot="header") {{user.nickname}}
     nav-menu-header 分类
     nav-menu(@click="switchType(9)", icon="sentiment_satisfied", title="全部")
-    nav-menu(@click="switchType(0)", icon="sentiment_dissatisfied", title="未处理")
-    nav-menu(@click="switchType(2)", icon="sentiment_very_satisfied", title="已上传")
+    nav-menu(@click="switchType(0)", icon="sentiment_dissatisfied", title="待处理")
+    nav-menu(@click="switchType(1)", icon="sentiment_very_satisfied", title="连载中")
     nav-menu(@click="switchType(-1)", icon="sentiment_very_dissatisfied", title="禁止上传")
     nav-divider
     nav-menu(@click="about()", icon="info_outline", title="关于")
@@ -62,6 +63,8 @@ export default {
   },
   data () {
     return {
+      scroll: 0,
+      buttonShow: true,
       navShow: false,
       confirm: {
         msg: '',
@@ -127,6 +130,15 @@ export default {
       }, 400)
     }
   },
+  watch: {
+    scroll (val, oldVal) {
+      if (val - oldVal > 0) {
+        this.buttonShow = false
+      } else {
+        this.buttonShow = true
+      }
+    }
+  },
   vuex: {
     actions: {
       getFirstPagePosts,
@@ -149,4 +161,8 @@ export default {
 </script>
 
 <style lang="stylus">
+#forum
+  .vc-item-title-after img
+    width 20px
+    border-radius 50%
 </style>

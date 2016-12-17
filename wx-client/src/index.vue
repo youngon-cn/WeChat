@@ -10,9 +10,6 @@ import { toasts, alert } from 'vx/getters'
 
 export default {
   ready () {
-    if (window.applicationCache.status === window.applicationCache.UPDATEREADY) {
-      window.applicationCache.update()
-    }
     var ua = navigator.userAgent.toLowerCase()
     var isWeixin = ua.indexOf('micromessenger') !== -1
     this.tryAuth(3, isWeixin)

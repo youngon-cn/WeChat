@@ -46,7 +46,7 @@ var webpackConfig = merge(baseWebpackConfig, {
       filename: process.env.NODE_ENV === 'testing'
         ? 'index.html'
         : config.build.index,
-      template: 'index_prod.pug',
+      template: 'index.pug',
       inject: true,
       minify: {
         removeComments: true,

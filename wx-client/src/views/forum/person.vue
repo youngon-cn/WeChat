@@ -16,7 +16,7 @@
         tab-bar-item 我的收藏
       .vc-refresh-control(v-show="refreshing", transition="fade")
         circular(:size="20", :border-width="2")
-      list(v-if="tabActive === 0")
+      list(v-show="tabActive === 0")
         item(v-for="post in postList.a", v-link="{path: '/forum/detail/' + post._id + '?index=' + $index}", track-by="_id", transition="bounce")
           item-media.headImg
             p(v-if="post.type === 0") 未处理
@@ -36,7 +36,7 @@
             item-title-row
               item-title.sub-title 创建于：{{moment(post.postDate).format('YYYY-MM-DD HH:mm:ss')}}
               item-title-after {{moment(post.postDate).fromNow()}}
-      list(v-if="tabActive === 1")
+      list(v-show="tabActive === 1")
         item(v-for="post in postList.b", v-link="{path: '/forum/detail/' + post._id + '?index=' + $index}", track-by="_id", transition="bounce")
           item-media.headImg
             p(v-if="post.type === 0") 未处理
@@ -56,7 +56,7 @@
             item-title-row
               item-title.sub-title 创建于：{{moment(post.postDate).format('YYYY-MM-DD HH:mm:ss')}}
               item-title-after {{moment(post.postDate).fromNow()}}
-      list(v-if="tabActive === 2")
+      list(v-show="tabActive === 2")
         item(v-for="post in postList.c", v-link="{path: '/forum/detail/' + post._id + '?index=' + $index}", track-by="_id", transition="bounce")
           item-media.headImg
             p(v-if="post.type === 0") 未处理
@@ -76,12 +76,12 @@
             item-title-row
               item-title.sub-title 创建于：{{moment(post.postDate).format('YYYY-MM-DD HH:mm:ss')}}
               item-title-after {{moment(post.postDate).fromNow()}}
-    infinite-scroll(@load="getNextPagePosts(postList.b[postList.b.length-1], tabActive)", :trigger="$els.person", :loading="loading")
+    infinite-scroll(@load="getNextPagePosts(tabActive)", :trigger="$els.person", v-if="false")
 </template>
 
 <script>
-import { getUser, toogleRefreshing, toogleLoading, toast } from 'vx/actions'
-import { user, refreshing, loading } from 'vx/getters'
+import { getUser, toogleRefreshing, toast } from 'vx/actions'
+import { user, refreshing } from 'vx/getters'
 import moment from 'moment'
 moment.locale('zh-cn')
 
@@ -153,31 +153,27 @@ export default {
           })
       }
     },
-    getNextPagePosts (post, type) {
+    getNextPagePosts (type) {
       if (type === 0) {
-        this.toogleLoading()
+        if (this.postList.a.length % 10 !== 0) return
         this.$http
-          .get('/request/forum/posts/reply/nextPage?updateDate=' + post.updateDate + '&commenter=' + this.$route.params.pid || this.user._id)
+          .get('/request/forum/posts/reply/nextPage?updateDate=' + this.postList.a[this.postList.a.length - 1].updateDate + '&commenter=' + this.$route.params.pid || this.user._id)
           .then((data) => {
-            this.toogleLoading()
             for (let post of data.body) {
               this.postList.a.push(post)
             }
           }, (err) => {
-            this.toogleLoading()
             console.log(err)
           })
       } else if (type === 1) {
-        this.toogleLoading()
+        if (this.postList.b.length % 10 !== 0) return
         this.$http
-          .get('/request/forum/posts/nextPage?updateDate=' + post.updateDate + '&type=9&poster=' + this.$route.params.pid || this.user._id)
+          .get('/request/forum/posts/nextPage?updateDate=' + this.postList.b[this.postList.b.length - 1].updateDate + '&type=9&poster=' + this.$route.params.pid || this.user._id)
           .then((data) => {
-            this.toogleLoading()
             for (let post of data.body) {
               this.postList.b.push(post)
             }
           }, (err) => {
-            this.toogleLoading()
             console.log(err)
           })
       }
@@ -189,6 +185,8 @@ export default {
           if (data.body.state === 1) {
             this.getUser()
             this.toast('数据更新成功')
+          } else if (data.body.turnUrl) {
+            window.location.href = data.body.turnUrl
           }
         }, (err) => {
           this.toast('数据更新失败，请稍后再试')
@@ -203,13 +201,11 @@ export default {
     actions: {
       getUser,
       toogleRefreshing,
-      toogleLoading,
       toast
     },
     getters: {
       user,
-      refreshing,
-      loading
+      refreshing
     }
   }
 }

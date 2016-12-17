@@ -1,5 +1,10 @@
 export const user = state => state.user
-export const posts = state => state.posts
+export const posts = state => {
+  for (let post of state.posts) {
+    post.charger = post.charger || {}
+  }
+  return state.posts
+}
 export const postsType = state => state.postsType
 export const refreshing = state => state.refreshing
 export const loading = state => state.loading

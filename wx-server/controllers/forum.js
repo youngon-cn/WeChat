@@ -11,17 +11,31 @@ var api = new WechatAPI(wx.appid, wx.appsecret)
 var tc = require('text-censor')
 
 exports.wxoauth = function (req, res) {
+  if (req.query.type === 'fresh') return get_user(req.session.openid)
+  client.getAccessToken(req.query.code, (err, result) => {
+    if (err) return res.json({ "state": 0, "err": err })
+    get_user(result.data.openid)
+  })
+  function get_user (openid) {
+    api.getUser({openid: openid, lang: 'zh_CN'}, (err, result) => {
+      if (result.subscribe) return upsert_user(result)
+      client.getUser({openid: openid, lang: 'zh_CN'}, (err, result) => {
+        if (err) return res.json({"state": 0, "turnUrl" : client.getAuthorizeURL(req.headers.referer, 'wxoauth', 'snsapi_userinfo')})
+        upsert_user(result)
+      })
+    })
+  }
   function upsert_user (result) {
     User
       .findOne({ openid: result.openid })
       .then(user => {
         if (user) {
           user.nickname = result.nickname
-          user.remark = result.remark
           user.headimgurl = result.headimgurl.replace(/http:/g, "")
           user.sex = result.sex
           user.province = result.province
           user.city = result.city
+          if (result.remark) user.remark = result.remark
           user.save()
           req.session.userId = user._id
           req.session.openid = user.openid
@@ -33,7 +47,6 @@ exports.wxoauth = function (req, res) {
           .create({
             openid: result.openid,
             nickname: result.nickname,
-            remark: result.remark,
             headimgurl: result.headimgurl.replace(/http:/g, ""),
             sex: result.sex,
             province: result.province,
@@ -49,21 +62,6 @@ exports.wxoauth = function (req, res) {
             res.json({ "state": 0, "err": err })
           })
       })
-  }
-  if (req.query.type === 'fresh' || req.session.openid) {
-    api.getUser({openid: req.session.openid, lang: 'zh_CN'}, (err, result) => {
-      if (err || !result.openid) return res.json({ "state": 0 })
-      upsert_user(result)
-    })
-  } else if (req.query.code) {
-    client.getAccessToken(req.query.code, (err, result) => {
-      if (err || !result.data.openid) return res.json({ "state": 0 })
-      client.getUser({openid: result.data.openid, lang: 'zh_CN'}, (err, result) => {
-        upsert_user(result)
-      })
-    })
-  } else {
-    res.json({ "state": 0 })
   }
 }
 
@@ -110,7 +108,7 @@ exports.getFirstPageReplyPosts = function (req, res) {
     })
     .then(posts => {
       return Post.find({"_id": { "$in": posts }})
-        .select('-comments -content')
+        .select('-comments -content -charger')
         .sort({updateDate: -1, _id: -1})
         .limit(10)
         .populate({
@@ -141,7 +139,7 @@ exports.getNextPageReplyPosts = function (req, res) {
     })
     .then(posts => {
       return Post.find({"_id": { "$in": posts }})
-        .select('-comments -content')
+        .select('-comments -content -charger')
         .sort({updateDate: -1, _id: -1})
         .limit(10)
         .populate({
@@ -169,6 +167,10 @@ exports.getFirstPagePosts = function (req, res) {
     .populate({
       select: 'nickname headimgurl type',
       path: 'poster'
+    })
+    .populate({
+      select: 'headimgurl',
+      path: 'charger'
     })
     .then(posts => {
       res.send(posts)
@@ -199,6 +201,10 @@ exports.getNextPagePosts = function (req, res) {
     .populate({
       select: 'nickname headimgurl type',
       path: 'poster'
+    })
+    .populate({
+      select: 'headimgurl',
+      path: 'charger'
     })
     .then(posts => {
       res.send(posts)
@@ -337,6 +343,7 @@ exports.postOperate = function (req, res) {
       return User.findById(poster)
     })
     .then(user => {
+      if (req.body.type === 1.2) return user.openid
       api.sendText(user.openid, '[VOD论坛]有人处理了你的请求', (err, result) => {
         res.json({ "state": 1, "notice": result })
       })
