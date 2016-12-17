@@ -108,7 +108,7 @@ img.youngon
   transform translate(-100%, 0)
 
 .fade-transition {
-  transition all .5s ease
+  transition all .3s
   opacity 1
 }
 

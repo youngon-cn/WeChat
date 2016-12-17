@@ -18,7 +18,7 @@
         item-content
           item-title-row
             item-title {{post.title}}
-            item-title-after(v-if="user.type === 9")
+            item-title-after(v-if="user.type === 9", transition="fade")
               img(:src="post.charger.headimgurl")
               icon(value="delete_forever", :size="20", @click.prevent.stop="delPost(post._id, $index)")
           item-title-row
@@ -31,7 +31,7 @@
             item-title.sub-title 创建于：{{moment(post.postDate).format('YYYY-MM-DD HH:mm:ss')}}
             item-title-after {{moment(post.postDate).fromNow()}}
     infinite-scroll(@load="getNextPagePosts(posts[posts.length-1], postsType)", :trigger="$els.post_list", :loading="loading")
-    float-button(v-show="user.nickname && buttonShow", transition="fade", style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="mode_edit", v-link="{path: '/forum/publish'}")
+    float-button(v-show="user.nickname && buttonShow", transition="fade", style="right: 20px; bottom: 20px; z-index: 99", fixed, color="red", icon="mode_edit", v-link="{path: '/forum/publish'}", v-el:to_publish)
   overlay(v-show="navShow")
   nav-drawer(:overlay="false", :show.sync="navShow", v-touch:swipeleft="toogleNav('close')")
     .nav-icon-logo(slot="header", v-link="{path: '/person/' + user._id}")
@@ -133,9 +133,9 @@ export default {
   watch: {
     scroll (val, oldVal) {
       if (val - oldVal > 0) {
-        this.buttonShow = false
+        this.$els.to_publish.style.bottom = '-60px'
       } else {
-        this.buttonShow = true
+        this.$els.to_publish.style.bottom = '20px'
       }
     }
   },
