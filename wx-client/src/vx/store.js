@@ -36,7 +36,10 @@ const mutations = {
     if (!state.posts[index]) return
     state.posts[index].pv = pv
     state.posts[index].nc = nc
-    if (type) state.posts[index].type = type
+    if (type) {
+      state.posts[index].type = type
+      state.posts[index].charger.headimgurl = state.user.headimgurl
+    }
   },
   SCROLLSET (state, scrollTop) {
     state.scrollTop = scrollTop

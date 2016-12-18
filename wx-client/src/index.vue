@@ -99,7 +99,7 @@ img.youngon
 
 // animation
 .slideIn-transition, .slideOut-transition
-  transition all .4s ease
+  transition transform .4s ease
 
 .slideIn-enter, .slideOut-leave
   transform translate(100%, 0)
@@ -108,7 +108,7 @@ img.youngon
   transform translate(-100%, 0)
 
 .fade-transition {
-  transition all .3s
+  transition opacity .4s
   opacity 1
 }
 

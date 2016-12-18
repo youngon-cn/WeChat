@@ -354,7 +354,9 @@ exports.postOperate = function (req, res) {
       Post
         .findById(req.body.postId)
         .then(post => {
-            return User.find({'_id': { $in: post.favoriters }})
+          post.charger = req.session.userId
+          post.save()
+          return User.find({'_id': { $in: post.favoriters }})
         })
         .then(favoriters => {
           for (favoriter of favoriters) {
