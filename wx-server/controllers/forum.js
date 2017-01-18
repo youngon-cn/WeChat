@@ -96,6 +96,19 @@ exports.info = function (req, res) {
     })
 }
 
+exports.users = function (req, res) {
+  User
+    .find()
+    .select('regDate')
+    .sort('regDate')
+    .then(users => {
+      res.json({ "state": 1, "users": users })
+    })
+    .catch(err => {
+      res.json({ "state": 0, "err": err })
+    })
+}
+
 exports.getFirstPageReplyPosts = function (req, res) {
   Comment
     .find({'commenter': req.query.commenter})

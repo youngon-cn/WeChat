@@ -36,24 +36,29 @@ router.map({
       require(['./views/forum/'], resolve)
     }
   },
+  '/forum/admin': {
+    component (resolve) {
+      require(['./views/forum/admin'], resolve)
+    }
+  },
   '/person/:pid': {
     component (resolve) {
-      require(['./views/forum/person.vue'], resolve)
+      require(['./views/forum/person'], resolve)
     }
   },
   '/person': {
     component (resolve) {
-      require(['./views/forum/person.vue'], resolve)
+      require(['./views/forum/person'], resolve)
     }
   },
   '/forum/publish': {
     component (resolve) {
-      require(['./views/forum/publish.vue'], resolve)
+      require(['./views/forum/publish'], resolve)
     }
   },
   '/forum/detail/:pid': {
     component (resolve) {
-      require(['./views/forum/detail.vue'], resolve)
+      require(['./views/forum/detail'], resolve)
     }
   },
   '/history': {

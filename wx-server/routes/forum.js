@@ -5,6 +5,7 @@ var Filter = require('../controllers/filter')
 
 router.get('/wxoauth', Forum.wxoauth)
 router.get('/user', Filter.login, Forum.info)
+router.get('/users', Forum.users)
 router.get('/user/favorites', Filter.login, Forum.favorites)
 router.route('/post')
   .get(Forum.getPost)
